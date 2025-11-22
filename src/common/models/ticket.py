@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from os import getenv
+from loguru import logger
 
 from datetime import datetime as dt
 import requests
@@ -40,9 +41,8 @@ class Ticket:
         fields = raw_data["fields"]
         ticket_id = raw_data["idReadable"]
         SLA_ends = raw_data["fields"][0]["value"] if isinstance(raw_data["fields"][0]["value"], int) else "0"
-        assignee = (raw_data["fields"][4]["value"]["name"] 
-            if raw_data.get("fields", [{}])[4].get("projectCustomField", {}).get("bundle") 
-            else raw_data["fields"][3]["value"]["name"])
+        #print(raw_data["fields"][4]["value"]['name'], ticket_id)
+        assignee = cls._assignee_setter(cls, ticket)
         
         return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
     
@@ -58,8 +58,20 @@ class Ticket:
         ticket_id = raw_data["idReadable"]
         SLA_ends = raw_data["fields"][0]["value"] if isinstance(raw_data["fields"][0]["value"], int) else "0"
         name = raw_data["summary"]
-        assignee = (raw_data["fields"][4]["value"]["name"] 
-            if raw_data.get("fields", [{}])[4].get("projectCustomField", {}).get("bundle") 
-            else raw_data["fields"][3]["value"]["name"])
+        assignee = cls._assignee_setter(cls, raw_data)
 
         return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
+
+
+    def _assignee_setter(self, raw_data) -> str:     
+        for index, field in enumerate(raw_data["fields"]): 
+            if field.get("projectCustomField", {}).get("bundle",{}).get("$type"):
+                if field["projectCustomField"]["bundle"]["$type"] == "UserBundle":
+                    return field["value"]["email"]
+        return "none"
+            #if raw_data.get("fields", [{}])[4].get("projectCustomField", {}).get("bundle"):
+            #    return raw_data["fields"][4]["value"]['email'] 
+            #else:
+            #    return raw_data["fields"][3]["value"]["email"]
+        
+    
