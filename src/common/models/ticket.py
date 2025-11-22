@@ -69,9 +69,3 @@ class Ticket:
                 if field["projectCustomField"]["bundle"]["$type"] == "UserBundle":
                     return field["value"]["email"]
         return "none"
-            #if raw_data.get("fields", [{}])[4].get("projectCustomField", {}).get("bundle"):
-            #    return raw_data["fields"][4]["value"]['email'] 
-            #else:
-            #    return raw_data["fields"][3]["value"]["email"]
-        
-    
