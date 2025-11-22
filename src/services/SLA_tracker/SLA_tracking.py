@@ -1,4 +1,5 @@
-from aiogram import Bot
+from aiogram import Bot, html
+from aiogram.enums import ParseMode
 from os import getenv
 from dotenv import load_dotenv
 from loguru import logger
@@ -6,10 +7,13 @@ from common.utils.tickets_api import TicketsAPI
 from common.models.ticket import Ticket
 from datetime import datetime as dt 
 
+import urllib3
 import asyncio
 import time
 
 load_dotenv()
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 TOKEN = getenv("TELEGRAM_TOKEN")
 CHAT_ID = getenv("CHAT_ID")
@@ -39,30 +43,35 @@ async def mention_broken_SLA(tickets):
             new_tickets.append(ticket)
             ticket = Ticket.from_youtrack(ticket)
             msg = f'''🔴Истек срок решения🔴\
-                        \n{ticket.ticket_id}\
+                        \n\
+                        \n{html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
+                        \n\
                         \n{ticket.name}\
-                        \nhttps://tracker.ntechlab.com/tickets/{ticket.ticket_id}\
-                        \n{ticket.assignee}
+                        \n\
+                        \n{ticket.assignee}\
                         '''
-            await bot.send_message(chat_id=CHAT_ID, text=msg)
+            await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
     save_new_tickets(known_tickets.union(new_tickets))
 
 async def polling():
     api = TicketsAPI()
     while True:
         tickets = api.get_open_tickets_info()
+        known_tickets = load_known_tickets()
         sla_broken = []
         for ticket in tickets:
             sla = int(int(ticket.SLA_ends)/1000) - int(dt.now().timestamp())
             if sla == int(dt.now().timestamp()) * -1:
                 pass
-            elif sla < 0:
+            elif sla < 0 and ticket.ticket_id not in known_tickets:
                 sla_broken.append(ticket.ticket_id)
         
         
         if len(sla_broken) != 0:
+            logger.info(f"{len(sla_broken)} tickets with broken SLA.")
             await mention_broken_SLA(sla_broken)
-
+        else:
+            logger.info(f"No new broken SLA.")
         time.sleep(600)
 
 if __name__ == "__main__":
