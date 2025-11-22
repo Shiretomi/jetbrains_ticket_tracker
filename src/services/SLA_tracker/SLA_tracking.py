@@ -3,10 +3,11 @@ from aiogram.enums import ParseMode
 from os import getenv
 from dotenv import load_dotenv
 from loguru import logger
-from common.utils.tickets_api import TicketsAPI
-from common.models.ticket import Ticket
+from src.common.utils.tickets_api import TicketsAPI
+from src.common.models.ticket import Ticket
 from datetime import datetime as dt 
 
+import yaml
 import urllib3
 import asyncio
 import time
@@ -18,6 +19,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 TOKEN = getenv("TELEGRAM_TOKEN")
 CHAT_ID = getenv("CHAT_ID")
 bot = Bot(TOKEN)
+
+try:
+    with open('config/settings.yaml', 'r') as data:
+        config = yaml.load(data, Loader=yaml.FullLoader)
+
+    logger.info("YAML config successfully loaded.")
+except Exception as e:
+    logger.error(f"Error while loading YAML: {e}")
 
 def load_known_tickets():
     try:
@@ -42,13 +51,13 @@ async def mention_broken_SLA(tickets):
             #TODO: пинг через конфиг ямл
             new_tickets.append(ticket)
             ticket = Ticket.from_youtrack(ticket)
-            msg = f'''🔴Истек срок решения🔴\
+            msg = f'''🔴 SLA просрочен 🔴\
                         \n\
                         \n{html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
                         \n\
                         \n{ticket.name}\
                         \n\
-                        \n{ticket.assignee}\
+                        \n{config["users"][ticket.assignee]["tg_user"]}\
                         '''
             await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
     save_new_tickets(known_tickets.union(new_tickets))
