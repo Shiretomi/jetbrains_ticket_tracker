@@ -12,6 +12,7 @@ import time
 load_dotenv()
 
 TOKEN = getenv("TELEGRAM_TOKEN")
+CHAT_ID = getenv("CHAT_ID")
 bot = Bot(TOKEN)
 
 def load_known_tickets():
@@ -43,7 +44,7 @@ async def mention_broken_SLA(tickets):
                         \nhttps://tracker.ntechlab.com/tickets/{ticket.ticket_id}\
                         \n{ticket.assignee}
                         '''
-            await bot.send_message(chat_id=804265816, text=msg)
+            await bot.send_message(chat_id=CHAT_ID, text=msg)
     save_new_tickets(known_tickets.union(new_tickets))
 
 async def polling():
