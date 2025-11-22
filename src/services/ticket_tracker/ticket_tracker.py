@@ -24,7 +24,7 @@ def mention_new_ticket(tickets):
                 \n\
                 \n{ticket.name}\
             '''
-        bot.send_message(chat_id=CHAT_ID,)
+        bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
         
 
 
