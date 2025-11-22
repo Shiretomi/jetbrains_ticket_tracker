@@ -33,7 +33,6 @@ class Ticket:
     @classmethod
     def from_json(cls, ticket):
         raw_data = ticket
-
         name = raw_data["summary"]
         created_at = dt.fromtimestamp(raw_data["created"]/1000)
         reporter = raw_data["reporter"]
@@ -61,6 +60,21 @@ class Ticket:
         assignee = cls._assignee_setter(cls, raw_data)
 
         return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
+
+    @classmethod
+    def new_ticket(cls, ticket):
+        raw_data = ticket
+        ticket_id = raw_data["idReadable"]
+        name = raw_data["summary"]
+        description = raw_data["description"]
+        fields = {}
+        SLA_ends = 0
+        assignee = "None"
+        reporter = "None"
+        created_at = "None"
+        
+        return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
+    
 
 
     def _assignee_setter(self, raw_data) -> str:     
