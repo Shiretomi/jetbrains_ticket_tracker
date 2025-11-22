@@ -47,3 +47,19 @@ class TicketsAPI:
             formated_tickets.append(formated_ticket)
         
         return formated_tickets
+
+    def get_new_ticket(self) -> list:
+        URL = "https://tracker.ntechlab.com/api/issues"
+        ATTRIBS = "?fields=idReadable,summary,description&query=project:{Support | Служба поддержки}%20 Assignee: Unassigned State: -Closed, -{Waiting for L2}'"
+        full_link = f"{URL}{ATTRIBS}"
+
+        tickets = requests.get(url=full_link, headers=self.HEADERS).json()
+        new_tickets = []
+
+        for ticket in tickets:
+            print(ticket)
+            new_ticket = Ticket.new_ticket(ticket)
+            new_tickets.append(new_ticket)
+        
+        return new_tickets
+        
