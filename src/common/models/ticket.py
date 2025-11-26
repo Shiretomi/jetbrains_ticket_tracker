@@ -1,14 +1,15 @@
 from dotenv import load_dotenv
 from os import getenv
 from loguru import logger
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy.ext.declarative import declarative_base
+from common.utils.database import Base
 
 from datetime import datetime as dt
 import requests
 
 load_dotenv()
 
-
-#TODO: Добавить SLA в модель тикетов
 class Ticket:
     TOKEN = getenv("YOUTRACK_TOKEN")
     BASE_URL="https://tracker.ntechlab.com/api/issues/"
@@ -83,3 +84,12 @@ class Ticket:
                 if field["projectCustomField"]["bundle"]["$type"] == "UserBundle":
                     return field["value"]["email"]
         return "none"
+    
+#class TicketModel(Base):
+#    __tablename__ = "tickets"
+#
+#    #SUP-00000 - 9 символов
+#    id = Column(String(9), primary_key=True)
+#    title = Column(String, nullable=False)
+#    description = Column(Text)
+#    created_at = Column(DateTime)

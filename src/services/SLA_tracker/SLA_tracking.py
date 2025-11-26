@@ -3,8 +3,8 @@ from aiogram.enums import ParseMode
 from os import getenv
 from dotenv import load_dotenv
 from loguru import logger
-from src.common.utils.tickets_api import TicketsAPI
-from src.common.models.ticket import Ticket
+from common.utils.tickets_api import TicketsAPI
+from common.models.ticket import Ticket
 from datetime import datetime as dt 
 
 import yaml
@@ -42,25 +42,30 @@ def save_new_tickets(all_tickets):
         file.close()
 
 async def mention_broken_SLA(tickets):
-    known_tickets = load_known_tickets()
-    new_tickets = []
-    for ticket in tickets:
-        if ticket in known_tickets:
-            continue
-        else:
-            #TODO: пинг через конфиг ямл
-            new_tickets.append(ticket)
-            ticket = Ticket.from_youtrack(ticket)
-            msg = f'''🔴 SLA просрочен 🔴\
-                        \n\
-                        \n{html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
-                        \n\
-                        \n{ticket.name}\
-                        \n\
-                        \n{config["users"][ticket.assignee]["tg_user"]}\
-                        '''
-            await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
-    save_new_tickets(known_tickets.union(new_tickets))
+    try:
+        known_tickets = load_known_tickets()
+        new_tickets = []
+        for ticket in tickets:
+            if ticket in known_tickets:
+                continue
+            else:
+                #TODO: пинг через конфиг ямл
+                new_tickets.append(ticket)
+                ticket = Ticket.from_youtrack(ticket)
+                msg = f'''🔴 SLA просрочен 🔴\
+                            \n\
+                            \n{html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
+                            \n\
+                            \n{ticket.name}\
+                            \n\
+                            \n{config["users"][ticket.assignee]["tg_user"]}\
+                            '''
+                await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
+        save_new_tickets(known_tickets.union(new_tickets))
+    except Exception as e:
+        logger.error(f"Ticket: {ticket.ticket_id} Error {e}.")
+        await bot.send_message(chat_id=CHAT_ID, text=f"Ошибка с тикетом {ticket.ticket_id}", parse_mode=ParseMode.HTML)
+        save_new_tickets(known_tickets.union(new_tickets))
 
 async def polling():
     api = TicketsAPI()
