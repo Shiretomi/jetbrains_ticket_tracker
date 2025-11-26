@@ -1,9 +1,13 @@
-import asyncio
+import sys
+sys.path.append("./src")
 
 from dotenv import load_dotenv
 from commands.dev_and_fun import init_dev
 from aiogram import Bot, Dispatcher
 from os import getenv
+
+import asyncio
+
 
 load_dotenv()
 
