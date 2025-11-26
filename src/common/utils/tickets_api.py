@@ -1,5 +1,5 @@
 from os import getenv
-from models.ticket import Ticket
+from common.models.ticket import Ticket
 
 import json
 import requests
@@ -19,7 +19,7 @@ class TicketsAPI:
 
     def _get_open_tickets_ids(self) -> list:
         URL = "https://tracker.ntechlab.com/api/sortedIssues"
-        ATTRIBS = "?topRoot=100&skipRoot=0&flatten=true&query=state: {Waiting for L2}, {Waiting for developer}, {Waiting for delivery}, {Waiting for customer}, {On hold}, {Waiting for support}&folderId=108-0&fields=tree(id,summaryTextSearchResult(highlightRanges(startOffset,endOffset)))"
+        ATTRIBS = "?topRoot=100&skipRoot=0&flatten=true&query=state: {Waiting for L2}, {Waiting for developer}, {Waiting for delivery}, {Waiting for customer}, {On hold}, {Waiting for support} Assignee: -Unassigned&folderId=108-0&fields=tree(id,summaryTextSearchResult(highlightRanges(startOffset,endOffset)))"
 
         full_url = f"{URL}{ATTRIBS}"
         tickets =  requests.get(full_url, headers=self.HEADERS).json()["tree"]
