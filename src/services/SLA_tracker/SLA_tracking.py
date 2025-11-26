@@ -1,3 +1,6 @@
+import sys
+sys.path.append("./src")
+
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
 from os import getenv

@@ -1,10 +1,13 @@
+import sys
+sys.path.append("./src")
+
 import asyncio
 import time
 
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
 from loguru import logger
-from src.common.utils.tickets_api import TicketsAPI
+from common.utils.tickets_api import TicketsAPI
 from os import getenv
 from dotenv import load_dotenv
 
