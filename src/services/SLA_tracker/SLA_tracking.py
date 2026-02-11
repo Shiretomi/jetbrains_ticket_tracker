@@ -10,6 +10,7 @@ from common.utils.tickets_api import TicketsAPI
 from common.models.ticket import Ticket
 from datetime import datetime as dt 
 
+import redis
 import yaml
 import urllib3
 import asyncio
@@ -19,41 +20,39 @@ load_dotenv()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+#Telegram
 TOKEN = getenv("TELEGRAM_TOKEN")
 CHAT_ID = getenv("CHAT_ID")
+
+#Redis
+REDIS_URL = getenv("REDIS_URL")
+REDIS_PORT = getenv("REDIS_PORT")
+
 bot = Bot(TOKEN)
 
+r = redis.Redis(
+    host=REDIS_URL,
+    port=REDIS_PORT,
+    decode_responses=True,
+    db=1
+)
+
 try:
-    with open('config/settings.yaml', 'r') as data:
+    with open('config/settings.yaml', 'r', encoding="utf-8") as data:
         config = yaml.load(data, Loader=yaml.FullLoader)
 
     logger.info("YAML config successfully loaded.")
 except Exception as e:
     logger.error(f"Error while loading YAML: {e}")
 
-def load_known_tickets():
-    try:
-        with open('SLA_broken_tickets.txt', 'r') as file:
-            return set(line.strip() for line in file)
-    except FileNotFoundError:
-        return set()
-
-def save_new_tickets(all_tickets):    
-    with open('SLA_broken_tickets.txt', 'w') as file:
-        for ticket in all_tickets:
-            file.write(f"{ticket}\n")
-        file.close()
-
 async def mention_broken_SLA(tickets):
     try:
-        known_tickets = load_known_tickets()
-        new_tickets = []
         for ticket in tickets:
-            if ticket in known_tickets:
+            print(ticket)
+            if r.sismember("tickets:known", ticket):
                 continue
             else:
                 #TODO: пинг через конфиг ямл
-                new_tickets.append(ticket)
                 ticket = Ticket.from_youtrack(ticket)
                 msg = f'''🔴 SLA просрочен 🔴\
                             \n\
@@ -64,23 +63,25 @@ async def mention_broken_SLA(tickets):
                             \n{config["users"][ticket.assignee]["tg_user"]}\
                             '''
                 await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
-        save_new_tickets(known_tickets.union(new_tickets))
+                r.sadd("tickets:known", ticket.ticket_id)
+
     except Exception as e:
+        print(ticket)
         logger.error(f"Ticket: {ticket.ticket_id} Error {e}.")
-        await bot.send_message(chat_id=CHAT_ID, text=f"Ошибка с тикетом {ticket.ticket_id}", parse_mode=ParseMode.HTML)
-        save_new_tickets(known_tickets.union(new_tickets))
+        await bot.send_message(chat_id=CHAT_ID, text=f"🔴 SLA просрочен 🔴\nОшибка с тикетом {ticket.ticket_id}\nНе удалось спарсить", parse_mode=ParseMode.HTML)
+        r.sadd("tickets:known", ticket.ticket_id)
+        await mention_broken_SLA(tickets)
 
 async def polling():
     api = TicketsAPI()
     while True:
         tickets = api.get_open_tickets_info()
-        known_tickets = load_known_tickets()
         sla_broken = []
         for ticket in tickets:
             sla = int(int(ticket.SLA_ends)/1000) - int(dt.now().timestamp())
             if sla == int(dt.now().timestamp()) * -1:
                 pass
-            elif sla < 0 and ticket.ticket_id not in known_tickets:
+            elif sla < 0 and not r.sismember("tickets:known", ticket.ticket_id):
                 sla_broken.append(ticket.ticket_id)
         
         
