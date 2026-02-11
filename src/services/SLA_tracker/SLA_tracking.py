@@ -52,7 +52,10 @@ async def mention_broken_SLA(tickets):
             if r.sismember("tickets:known", ticket):
                 continue
             else:
-                #TODO: пинг через конфиг ямл
+                if config["users"][ticket.assignee]["line"] == "l2":
+                    user_ping = config["users"][ticket.assignee]["tg_user"]
+                else: 
+                    user_ping = ""
                 ticket = Ticket.from_youtrack(ticket)
                 msg = f'''🔴 SLA просрочен 🔴\
                             \n\
@@ -60,7 +63,7 @@ async def mention_broken_SLA(tickets):
                             \n\
                             \n{ticket.name}\
                             \n\
-                            \n{config["users"][ticket.assignee]["tg_user"]}\
+                            \n@ntl_support\n{user_ping}\
                             '''
                 await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
                 r.sadd("tickets:known", ticket.ticket_id)
