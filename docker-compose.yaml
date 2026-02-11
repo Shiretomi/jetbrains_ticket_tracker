@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  sla_tracker:
+    build:
+      context: ./src/services/SLA_tracker/
+      dockerfile: Dockerfile
+      additional_contexts:
+        common: ./src/common/
+    container_name: sla_tracker_app
+    restart: always
+    environment:
+      - PYTHONPATH=/app   
+    env_file: .env
+    depends_on:
+      - redis
+    volumes:
+      - ./config:/app/config
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis_db
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+  
