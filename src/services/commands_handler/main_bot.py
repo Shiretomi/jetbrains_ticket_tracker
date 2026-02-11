@@ -3,6 +3,7 @@ sys.path.append("./src")
 
 from dotenv import load_dotenv
 from commands.dev_and_fun import init_dev
+from commands.callbacks import init_callbacks
 from aiogram import Bot, Dispatcher
 from os import getenv
 
@@ -17,6 +18,7 @@ dp = Dispatcher()
 
 #Инициализацию команд вписывать сюда
 init_dev(dp)
+init_callbacks(dp)
 
 async def main() -> None:
     bot = Bot(token=TOKEN)
