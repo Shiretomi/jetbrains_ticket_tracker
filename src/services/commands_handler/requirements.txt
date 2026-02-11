@@ -1,0 +1,9 @@
+aiogram==3.25.0
+common==0.1.2
+loguru==0.7.3
+python-dotenv==1.2.1
+PyYAML==6.0.3
+redis==7.1.1
+urllib3==2.6.3
+SQLAlchemy==2.0.46
+requests==2.32.5
