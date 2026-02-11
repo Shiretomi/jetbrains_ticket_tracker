@@ -76,6 +76,20 @@ class Ticket:
         
         return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
     
+    @classmethod
+    def spam(cls, id):
+        raw_data = requests.get(url=f"{cls.BASE_URL}{id}{cls.ATTRIBS}", headers=cls.HEADERS, verify=False).json()
+        ticket_id = raw_data["idReadable"]
+        name = raw_data["summary"]
+        description = raw_data["description"]
+        fields = {}
+        SLA_ends = 0
+        assignee = "None"
+        reporter = "None"
+        created_at = "None"
+        
+        return cls(ticket_id, created_at, reporter, description, fields, SLA_ends, name, assignee, raw_data)
+    
 
 
     def _assignee_setter(self, raw_data) -> str:     
