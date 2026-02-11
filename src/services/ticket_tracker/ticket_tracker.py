@@ -3,6 +3,7 @@ sys.path.append("./src")
 
 import asyncio
 import time
+import redis
 
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
@@ -41,7 +42,7 @@ async def polling():
         else:
             logger.info(f"No new tickets.")
             logger.debug(f"len of tickets arr: ({len(tickets)})")
-        time.sleep(300)
+        time.sleep(100)
 
 if __name__ == "__main__":
     asyncio.run(polling())
