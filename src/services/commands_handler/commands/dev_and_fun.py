@@ -8,6 +8,8 @@ from aiogram.enums import ParseMode
 from common.models.ticket import Ticket
 from os import getenv
 
+TOKEN = getenv('YOUTRACK_TOKEN')
+
 def init_dev(bot):
 
     @bot.message(Command("chat_id"))
@@ -26,7 +28,6 @@ def init_dev(bot):
 
     @bot.message(Command("tickets_count"))
     async def tickets_count(message: Message):
-        TOKEN = getenv('YOUTRACK_TOKEN')
         URL = "https://tracker.ntechlab.com/api/sortedIssues"
         ATTRIBS = "?topRoot=100&skipRoot=0&flatten=true&query=state: {Waiting for L2}, {Waiting for developer}, {Waiting for delivery}, {Waiting for customer}, {On hold}, {Waiting for support}&folderId=108-0&fields=tree(id,summaryTextSearchResult(highlightRanges(startOffset,endOffset)))"
         HEADERS = {
