@@ -42,10 +42,10 @@ async def mention_new_ticket(tickets):
         if r.sismember("tickets:new", ticket.ticket_id):
             continue
         msg = f'''🟢 Новый тикет 🟢\n\n{html.bold("ID:")} {html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
-                \n\n{html.bold("Название")}: {format_text(ticket.name)}\
+                \n\n{html.bold("Название")}: {html_py.escape(format_text(ticket.name))}\
                 \n\
                 \n@ntl_support\
-                \n{html.expandable_blockquote(format_text(ticket.description))}
+                \n{html.expandable_blockquote(html_py.escape(format_text(ticket.description)))}
             '''
         await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_markup=await kb.spam_button(ticket.ticket_id))
         logger.info(f"Ticket {ticket.ticket_id} mentioned.")
