@@ -45,9 +45,10 @@ def init_callbacks(bot):
     @bot.callback_query(Select.next_option, F.data == "spam_yes")
     async def spam_yes(callback: types.CallbackQuery, state: FSMContext):
         data = await state.get_data()
-        API.send_to_spam(data.get("ticket_id"))
+        ticket_id = data.get("ticket_id")
+        API.send_to_spam(ticket_id)
 
-        msg = f"Тикет {data.get("ticket_id")} отправлен в спам"
+        msg = f"Тикет {ticket_id} отправлен в спам"
 
         await state.clear()
         await callback.message.edit_reply_markup(callback.inline_message_id, reply_markup=None)
