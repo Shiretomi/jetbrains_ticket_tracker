@@ -19,7 +19,7 @@ CHAT_ID = getenv("CHAT_ID")
 
 bot = Bot(TOKEN)
 
-
+#TODO: Сделать кнопку спама
 async def mention_new_ticket(tickets):
     for ticket in tickets:
         msg = f'''🟢 Новый тикет 🟢                         
