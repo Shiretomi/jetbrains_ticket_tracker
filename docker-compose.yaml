@@ -17,6 +17,20 @@ services:
     volumes:
       - ./config:/app/config
 
+  ticket_tracker:
+    build:
+      context: ./src/services/ticket_tracker/
+      dockerfile: Dockerfile
+      additional_contexts:
+        common: ./src/common/
+    container_name: ticket_tracker_app
+    restart: always
+    environment:
+      - PYTHONPATH=/app   
+    env_file: .env
+    depends_on:
+      - redis
+
   redis:
     image: "redis:alpine"
     container_name: redis_db
