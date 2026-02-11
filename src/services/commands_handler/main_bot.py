@@ -14,6 +14,8 @@ load_dotenv()
 
 TOKEN = getenv("TELEGRAM_TOKEN")
 
+BOT = Bot(token=TOKEN)
+
 dp = Dispatcher()
 
 #Инициализацию команд вписывать сюда
@@ -21,8 +23,7 @@ init_dev(dp)
 init_callbacks(dp)
 
 async def main() -> None:
-    bot = Bot(token=TOKEN)
-    await dp.start_polling(bot)
+    await dp.start_polling(BOT)
 
 
 if __name__ == "__main__":
