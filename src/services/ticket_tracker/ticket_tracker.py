@@ -45,9 +45,9 @@ async def mention_new_ticket(tickets):
                 \n\n{html.bold("Название")}: {html_py.escape(format_text(ticket.name))}\
                 \n\
                 \n@ntl_support\
-                \n{html.expandable_blockquote(html_py.escape(format_text(ticket.description)))}
+                \n{html.expandable_blockquote(html_py.escape(format_text(ticket.description)).strip())}
             '''
-        await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_markup=await kb.spam_button(ticket.ticket_id))
+        await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_markup=await kb.spam_button(ticket.ticket_id), reply_to_message_id=172548)
         logger.info(f"Ticket {ticket.ticket_id} mentioned.")
         r.sadd("tickets:new", ticket.ticket_id)
         
