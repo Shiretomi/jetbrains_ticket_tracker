@@ -19,6 +19,7 @@ load_dotenv()
 
 TOKEN = getenv("TELEGRAM_TOKEN")
 CHAT_ID = getenv("CHAT_ID")
+CHAT_THREAD = getenv("CHAT_THREAD")
 
 #Redis
 REDIS_URL = getenv("REDIS_URL")
@@ -36,7 +37,6 @@ bot = Bot(TOKEN)
 def format_text(text):
     return re.sub(r'<[^>]+>', '', text)
 
-#TODO: Сделать кнопку спама
 async def mention_new_ticket(tickets):
     for ticket in tickets:
         if r.sismember("tickets:new", ticket.ticket_id):
@@ -51,11 +51,10 @@ async def mention_new_ticket(tickets):
                 \n@ntl_support\
                 \n{description}
             '''
-        await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_markup=await kb.spam_button(ticket.ticket_id), reply_to_message_id=172548)
+        await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_markup=await kb.spam_button(ticket.ticket_id), reply_to_message_id=CHAT_THREAD)
         logger.info(f"Ticket {ticket.ticket_id} mentioned.")
         r.sadd("tickets:new", ticket.ticket_id)
-        
-
+                
 
 async def polling():
     api = TicketsAPI()

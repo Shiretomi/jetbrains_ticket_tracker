@@ -23,6 +23,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #Telegram
 TOKEN = getenv("TELEGRAM_TOKEN")
 CHAT_ID = getenv("CHAT_ID")
+CHAT_THREAD = getenv("CHAT_THREAD")
 
 #Redis
 REDIS_URL = getenv("REDIS_URL")
@@ -62,13 +63,13 @@ async def mention_broken_SLA(tickets):
                             \n\
                             \n@ntl_support\n{user_ping}\
                             '''
-                await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_to_message_id=172548)
+                await bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML, reply_to_message_id=CHAT_THREAD)
                 r.sadd("tickets:known", ticket.ticket_id)
 
     except Exception as e:
         print(ticket)
         logger.error(f"Ticket: {ticket.ticket_id} Error {e}.")
-        await bot.send_message(chat_id=CHAT_ID, text=f"🔴 SLA просрочен 🔴\nОшибка с тикетом {ticket.ticket_id}\nНе удалось спарсить", parse_mode=ParseMode.HTML)
+        await bot.send_message(chat_id=CHAT_ID, text=f"🔴 SLA просрочен 🔴\nОшибка с тикетом {ticket.ticket_id}\nНе удалось спарсить", parse_mode=ParseMode.HTML, reply_to_message_id=CHAT_THREAD)
         r.sadd("tickets:known", ticket.ticket_id)
         await mention_broken_SLA(tickets)
 
