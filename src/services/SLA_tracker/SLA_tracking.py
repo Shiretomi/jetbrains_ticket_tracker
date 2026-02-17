@@ -76,7 +76,7 @@ async def mention_broken_SLA(tickets):
 async def polling():
     api = TicketsAPI()
     while True:
-        tickets = api.get_open_tickets_info()
+        tickets = api.get_tickets_info_for_sla_check()
         sla_broken = []
         for ticket in tickets:
             sla = int(int(ticket.SLA_ends)/1000) - int(dt.now().timestamp())
