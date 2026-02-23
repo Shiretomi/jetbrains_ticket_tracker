@@ -17,7 +17,7 @@ BOT = Bot(TOKEN)
 def init_ansible(bot):
     @bot.message(Command("update_supdemo"))
     async def update(message: Message):
-        sent_message = await message.answer(f"Обновление SupDemo:\n\nDEBUG: info")
+        sent_message = await message.answer(f"Обновление SupDemo:\nПрогресс:\n\n")
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id)
 
     async def track_download_progress(chat_id, message_id, total_size, file_path):
@@ -35,6 +35,6 @@ def init_ansible(bot):
         )
         stdout, stderr = await result.communicate()
         if result.returncode == 0:
-            await BOT.send_message(chat_id, "✅ Обновление успешно завершено!")
+            await BOT.edit_message_text(chat_id, message_id, "✅ Обновление успешно завершено!")
         else:
-            await BOT.send_message(chat_id, f"❌ Ошибка:\n{stderr.decode()}")
+            await BOT.edit_message_text(chat_id, message_id, f"❌ Ошибка:\n{stderr.decode()}")
