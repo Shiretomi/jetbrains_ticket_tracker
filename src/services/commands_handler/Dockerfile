@@ -17,8 +17,6 @@ COPY --from=builder /root/.local /root/.local
 
 COPY ./commands ./commands
 
-COPY ./ansible ./ansible
-
 COPY ./main_bot.py .
 
 COPY --from=common . ./common
