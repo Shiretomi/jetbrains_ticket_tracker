@@ -1,3 +1,4 @@
+import asyncio
 import os
 import subprocess
 
@@ -26,13 +27,14 @@ def init_ansible(bot):
     async def run_ansible_playbook(chat_id, message_id):
         path_to_playbook = os.path.join("/app", "ansible", "update.yml")
         path_to_hosts = os.path.join("/app", "ansible", "hosts.ini")
-        try:
-            result = subprocess.run(
-                ["ansible-playbook", "-i", path_to_hosts, path_to_playbook],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            await BOT.send_message(chat_id, f"Ansible playbook executed successfully:\n{result.stdout}", reply_to_message_id=message_id)
-        except subprocess.CalledProcessError as e:
-            await BOT.send_message(chat_id, f"Error running Ansible playbook: {e}", reply_to_message_id=message_id)
+        
+        result = await asyncio.create_subprocess_exec(
+            "ansible-playbook", "-i", path_to_hosts, path_to_playbook,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await result.communicate()
+        if result.returncode == 0:
+            await BOT.send_message(chat_id, "✅ Обновление успешно завершено!")
+        else:
+            await BOT.send_message(chat_id, f"❌ Ошибка:\n{stderr.decode()}")
