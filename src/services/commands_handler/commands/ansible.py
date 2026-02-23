@@ -35,6 +35,6 @@ def init_ansible(bot):
         )
         stdout, stderr = await result.communicate()
         if result.returncode == 0:
-            await BOT.edit_message_text(chat_id, message_id, text=original_text + "✅ Обновление успешно завершено!")
+            await BOT.edit_message_text(chat_id, message_id, text=f'{original_text}\n✅ Обновление успешно завершено!')
         else:
-            await BOT.edit_message_text(chat_id, message_id, text=original_text + f"\n❌ Ошибка при обновлении:\n{stderr.decode()}")
+            await BOT.edit_message_text(chat_id, message_id, text=f'{original_text}\n❌ Ошибка при обновлении:\n{stderr.decode()}')
