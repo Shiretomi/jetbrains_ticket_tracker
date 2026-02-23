@@ -48,6 +48,8 @@ services:
     env_file: .env
     depends_on:
       - redis
+    volumes:
+      - ./.ssh/id_rsa_service:/app/ansible/id_rsa_service:ro
     networks:
       - bot_network
 

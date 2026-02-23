@@ -1,0 +1,21 @@
+---
+- name: Update images and restart docker containers
+  hosts: sup_demo
+  gather_facts: no
+  become: no
+  vars:
+    installer_url: "http://repo.int.ntl/"
+    destination: "ffmulti-2.4.1/"
+
+
+  tasks:
+    - name: Find installer name in repo
+      uri:
+        url: "{{ installer_url }}{{ destination }}"
+        return_content: yes
+      register: repo_response  
+
+    - name: Extract installer name
+      set_fact:
+        installer_name: "{{ repo_response.content | regex_findall('findface-multi-and-server[^\" ]*') | first}}"
+      when: repo_response.status == 200

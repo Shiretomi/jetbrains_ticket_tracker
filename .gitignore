@@ -218,3 +218,7 @@ __marimo__/
 ticket_example
 
 SLA_broken_tickets.txt
+
+# ansible
+hosts.ini
+id_rsa_service
