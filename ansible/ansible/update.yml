@@ -4,6 +4,7 @@
   gather_facts: no
   become: no
   vars:
+    ansible_python_interpreter: /usr/bin/python3
     installer_url: "http://repo.int.ntl/"
     destination: "ffmulti-2.4.1/"
 

@@ -49,7 +49,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - ./.ssh/id_rsa_service:/app/ansible/id_rsa_service:ro
+      - ./ansible/:/app/ansible/
     networks:
       - bot_network
 
