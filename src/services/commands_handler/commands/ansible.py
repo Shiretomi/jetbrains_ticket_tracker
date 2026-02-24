@@ -73,7 +73,7 @@ def init_ansible(bot):
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{original_text}\n✅ Обновление успешно завершено!'
+                text=f'{text_to_edit}✅\n\n✅ Обновление успешно завершено!'
                 )
         else:
             await BOT.edit_message_text(
