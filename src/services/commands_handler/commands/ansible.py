@@ -14,6 +14,13 @@ TOKEN = getenv("TELEGRAM_TOKEN")
 
 BOT = Bot(TOKEN)
 
+STEP_MAP = {
+    "TASK [Find installer in repo.int.ntl": "🔍 Ищу инсталлятор в репозитории...",
+    "TASK [Extract installer name": "🔍 Ищу имя инсталлятора...",
+    "TASK [Run installation": "⚙️ Устанавливаю пакет на сервер...",
+    "TASK [Cleanup": "🧹 Очищаю временные файлы..."
+}
+
 def init_ansible(bot):
     @bot.message(Command("update_supdemo"))
     async def update(message: Message):
@@ -28,13 +35,50 @@ def init_ansible(bot):
         path_to_playbook = os.path.join("/app", "ansible", "update.yml")
         path_to_hosts = os.path.join("/app", "ansible", "hosts.ini")
         
-        result = await asyncio.create_subprocess_exec(
+        process = await asyncio.create_subprocess_exec(
             "ansible-playbook", "-i", path_to_hosts, path_to_playbook,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await result.communicate()
-        if result.returncode == 0:
-            await BOT.edit_message_text(chat_id=chat_id, message_id=message_id, text=f'{original_text}\n✅ Обновление успешно завершено!')
+        text_to_edit = original_text
+        current_status = "Начинаю обновление..."
+        last_status = ""
+
+        while True:
+            line = await process.stdout.readline()
+            if not line:
+                break
+            decoded_line = line.decode().strip()
+            print(decoded_line)
+
+            for trigger, status_text in STEP_MAP.items():
+                if trigger in decoded_line:
+                    current_status = status_text
+                    break
+        
+            if current_status != last_status:
+                try:
+                    text_to_edit = f'{text_to_edit}✅\n{current_status}'
+                    await BOT.edit_message_text(
+                        chat_id=chat_id,
+                        message_id=message_id,
+                        text=text_to_edit
+                    )
+                    last_status = current_status
+                except Exception as e:
+                    pass
+        _, stderr = await process.communicate()
+
+        if process.returncode == 0:
+            await BOT.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=f'{original_text}\n✅ Обновление успешно завершено!'
+                )
         else:
-            await BOT.edit_message_text(chat_id=chat_id, message_id=message_id, text=f'{original_text}\n❌ Ошибка при обновлении:\n{stderr.decode()}')
+            await BOT.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=f'{original_text}\n❌ Ошибка при обновлении:\n{stderr.decode()[-500:]}',
+                parse_mode="Markdown"
+                )
