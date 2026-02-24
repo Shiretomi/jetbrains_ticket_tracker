@@ -61,6 +61,8 @@ def init_ansible(bot):
                     match current_status:
                         case "🔄 Начинаю обновление...\n":
                             text_to_edit = f'{text_to_edit}\n\n{current_status}'
+                        case "🔍 Ищу инсталлятор в репозитории...":
+                            text_to_edit = f'{text_to_edit}\n\n{current_status}'
                         case _:
                             text_to_edit = f'{text_to_edit} ✅\n{current_status}'
 
@@ -80,7 +82,7 @@ def init_ansible(bot):
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{text_to_edit}✅\n\n  Обновление успешно завершено!'
+                text=f'{text_to_edit}✅\n\n ✅Обновление успешно завершено!'
                 )
         else:
             await BOT.edit_message_text(
