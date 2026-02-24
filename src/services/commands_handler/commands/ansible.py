@@ -41,7 +41,7 @@ def init_ansible(bot):
             stderr=asyncio.subprocess.PIPE
         )
         text_to_edit = original_text
-        current_status = "Начинаю обновление..."
+        current_status = "Начинаю обновление...\n"
         last_status = ""
 
         while True:
@@ -58,7 +58,7 @@ def init_ansible(bot):
         
             if current_status != last_status:
                 try:
-                    text_to_edit = f'{text_to_edit}✅\n{current_status}'
+                    text_to_edit = f'{text_to_edit}✅\n{current_status}' if "Начинаю обновление..." or "Прогресс:" not in current_status else f'{text_to_edit}\n'
                     await BOT.edit_message_text(
                         chat_id=chat_id,
                         message_id=message_id,
@@ -79,6 +79,6 @@ def init_ansible(bot):
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{original_text}\n❌ Ошибка при обновлении:\n{stderr.decode()[-500:]}',
+                text=f'{text_to_edit}❌\n\n❌ Ошибка при обновлении:\n{stderr.decode()[-500:]}',
                 parse_mode="Markdown"
                 )
