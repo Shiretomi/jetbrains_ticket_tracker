@@ -24,7 +24,7 @@ STEP_MAP = {
 def init_ansible(bot):
     @bot.message(Command("update_supdemo"))
     async def update(message: Message):
-        sent_message = await message.answer(f"Обновление SupDemo:\nПрогресс:\n\n")
+        sent_message = await message.answer(f"Обновление SupDemo\nПрогресс:\n\n")
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id, sent_message.text)
 
     async def track_download_progress(chat_id, message_id, total_size, file_path):
@@ -41,7 +41,7 @@ def init_ansible(bot):
             stderr=asyncio.subprocess.PIPE
         )
         text_to_edit = original_text
-        current_status = "Начинаю обновление...\n"
+        current_status = "🔄 Начинаю обновление...\n"
         last_status = ""
 
         while True:
@@ -58,7 +58,14 @@ def init_ansible(bot):
         
             if current_status != last_status:
                 try:
-                    text_to_edit = f'{text_to_edit}✅\n{current_status}' if "Начинаю обновление..." not in current_status and "Прогресс:" not in current_status else f'{text_to_edit}\n'
+                    match current_status:
+                        case "🔄 Начинаю обновление...\n":
+                            text_to_edit = f'{text_to_edit}\n\n{current_status}'
+                        case _:
+                            text_to_edit = f'{text_to_edit} ✅\n{current_status}'
+
+                        
+                    
                     await BOT.edit_message_text(
                         chat_id=chat_id,
                         message_id=message_id,
@@ -73,7 +80,7 @@ def init_ansible(bot):
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{text_to_edit}✅\n\n✅ Обновление успешно завершено!'
+                text=f'{text_to_edit}✅\n\n  Обновление успешно завершено!'
                 )
         else:
             await BOT.edit_message_text(
