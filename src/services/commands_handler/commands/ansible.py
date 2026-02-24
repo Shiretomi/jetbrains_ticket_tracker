@@ -58,7 +58,7 @@ def init_ansible(bot):
         
             if current_status != last_status:
                 try:
-                    text_to_edit = f'{text_to_edit}✅\n{current_status}' if "Начинаю обновление..." or "Прогресс:" not in current_status else f'{text_to_edit}\n'
+                    text_to_edit = f'{text_to_edit}✅\n{current_status}' if "Начинаю обновление..." not in current_status and "Прогресс:" not in current_status else f'{text_to_edit}\n'
                     await BOT.edit_message_text(
                         chat_id=chat_id,
                         message_id=message_id,
