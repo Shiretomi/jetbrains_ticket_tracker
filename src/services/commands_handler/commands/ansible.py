@@ -1,6 +1,5 @@
 import asyncio
 import os
-import subprocess
 
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -17,7 +16,8 @@ BOT = Bot(TOKEN)
 STEP_MAP = {
     "TASK [Find installer in repo.int.ntl": "🔍 Ищу инсталлятор в репозитории...",
     "TASK [Extract installer name": "🔍 Ищу имя инсталлятора...",
-    "TASK [Run installation": "⚙️ Устанавливаю пакет на сервер...",
+    "TASK [Download installer": "⚙️ Скачиваю инсталлер на сервер...",
+    "TASK [Unzip installer": "📦 Вытаскиваю образы из инсталлера...",
     "TASK [Cleanup": "🧹 Очищаю временные файлы..."
 }
 
@@ -26,10 +26,6 @@ def init_ansible(bot):
     async def update(message: Message):
         sent_message = await message.answer(f"Обновление SupDemo\nПрогресс:\n\n")
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id, sent_message.text)
-
-    async def track_download_progress(chat_id, message_id, total_size, file_path):
-        total_gb = total_size / (1024 ** 3)
-        pass
 
     async def run_ansible_playbook(chat_id, message_id, original_text):
         path_to_playbook = os.path.join("/app", "ansible", "update.yml")
@@ -45,17 +41,20 @@ def init_ansible(bot):
         last_status = ""
 
         while True:
+            #чтение stdout
             line = await process.stdout.readline()
             if not line:
                 break
             decoded_line = line.decode().strip()
             print(decoded_line)
 
+            #вычленение триггер слов для бота
             for trigger, status_text in STEP_MAP.items():
                 if trigger in decoded_line:
                     current_status = status_text
                     break
         
+            #обновление статуса бота
             if current_status != last_status:
                 try:
                     match current_status:
@@ -65,8 +64,6 @@ def init_ansible(bot):
                             text_to_edit = f'{text_to_edit}\n{current_status}'
                         case _:
                             text_to_edit = f'{text_to_edit} ✅\n{current_status}'
-
-                        
                     
                     await BOT.edit_message_text(
                         chat_id=chat_id,
@@ -90,4 +87,4 @@ def init_ansible(bot):
                 message_id=message_id,
                 text=f'{text_to_edit}❌\n\n❌ Ошибка при обновлении:\n{stderr.decode()[-500:]}',
                 parse_mode="Markdown"
-                )
+            )
