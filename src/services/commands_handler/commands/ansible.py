@@ -1,9 +1,11 @@
 import asyncio
 import os
+import time
 
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram import Bot
+from aiogram import Bot, html
 from os import getenv
 from dotenv import load_dotenv
 
@@ -13,24 +15,32 @@ TOKEN = getenv("TELEGRAM_TOKEN")
 
 BOT = Bot(TOKEN)
 
+ERROR = "fatal: ["
+CURRENT_HASH_TRIGGER = '"msg": "Current hash: '
+
 STEP_MAP = {
     "TASK [Find installer in repo.int.ntl": "🔍 Ищу инсталлятор в репозитории...",
-    "TASK [Extract installer name": "🔍 Ищу имя инсталлятора...",
+    "TASK [Cleanup old": "🧹 Очищаю старые файлы, если остались...",
     "TASK [Download installer": "⚙️ Скачиваю инсталлер на сервер...",
     "TASK [Unzip installer": "📦 Вытаскиваю образы из инсталлера...",
-    "TASK [Cleanup": "🧹 Очищаю временные файлы..."
 }
 
 def init_ansible(bot):
     @bot.message(Command("update_supdemo"))
     async def update(message: Message):
-        sent_message = await message.answer(f"Обновление SupDemo\nПрогресс:\n\n")
+        
+        sent_message = await message.answer(f"Обновление Sup_demo\n\n\
+Прогресс:\
+\n\n", parse_mode=ParseMode.HTML)
+        
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id, sent_message.text)
 
     async def run_ansible_playbook(chat_id, message_id, original_text):
         path_to_playbook = os.path.join("/app", "ansible", "update.yml")
         path_to_hosts = os.path.join("/app", "ansible", "hosts.ini")
         
+        start_time = time.perf_counter()
+
         process = await asyncio.create_subprocess_exec(
             "ansible-playbook", "-i", path_to_hosts, path_to_playbook,
             stdout=asyncio.subprocess.PIPE,
@@ -39,6 +49,9 @@ def init_ansible(bot):
         text_to_edit = original_text
         current_status = "🔄 Начинаю обновление...\n"
         last_status = ""
+
+        current_hash = ""
+        error_msg = ""
 
         while True:
             #чтение stdout
@@ -53,38 +66,56 @@ def init_ansible(bot):
                 if trigger in decoded_line:
                     current_status = status_text
                     break
+                if ERROR in decoded_line:
+                    error_msg = decoded_line
+                if CURRENT_HASH_TRIGGER in decoded_line:
+                    current_hash = decoded_line.split(CURRENT_HASH_TRIGGER)[1][:-1]
+
         
             #обновление статуса бота
             if current_status != last_status:
                 try:
                     match current_status:
                         case "🔄 Начинаю обновление...\n":
-                            text_to_edit = f'{text_to_edit}\n\n{current_status}'
+                            text_to_edit = f'{text_to_edit}\n\n{html.italic(current_status)}'
                         case "🔍 Ищу инсталлятор в репозитории...":
-                            text_to_edit = f'{text_to_edit}\n{current_status}'
+                            text_to_edit = f'{text_to_edit}\n{html.code(current_status)}'
                         case _:
-                            text_to_edit = f'{text_to_edit} ✅\n{current_status}'
+                            text_to_edit = f'{text_to_edit} ✅\n{html.code(current_status)}'
                     
                     await BOT.edit_message_text(
                         chat_id=chat_id,
                         message_id=message_id,
-                        text=text_to_edit
+                        text=text_to_edit,
+                        parse_mode=ParseMode.HTML
                     )
                     last_status = current_status
                 except Exception as e:
                     pass
         _, stderr = await process.communicate()
 
+        end_time = time.perf_counter()
+        duration = int(end_time - start_time)
+        minutes = duration // 60
+        seconds = duration % 60
+        time_str = f"{minutes} мин. {seconds} сек." if minutes > 0 else f"{seconds}с"
+
         if process.returncode == 0:
+            builds = f'{html.code(current_hash)} -> {html.code("new-hash")}'
+            message = f'{text_to_edit} ✅\n\n✅Обновление успешно завершено!\n\n\
+Билд: {builds} (старый -> новый)\n\
+Обновлено за: {time_str}'
+            
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{text_to_edit} ✅\n\n ✅Обновление успешно завершено!'
+                text=message,
+                parse_mode=ParseMode.HTML
                 )
         else:
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
-                text=f'{text_to_edit}❌\n\n❌ Ошибка при обновлении:\n{stderr.decode()[-500:]}',
-                parse_mode="Markdown"
+                text=f'{text_to_edit}❌\n\n❌ Ошибка при обновлении:\n{html.expandable_blockquote(error_msg)}',
+                parse_mode=ParseMode.HTML
             )
