@@ -2,10 +2,12 @@ import asyncio
 import os
 import time
 
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types.inline_keyboard_button import InlineKeyboardButton
 from aiogram.enums import ParseMode
-from aiogram.filters import Command
+from aiogram.filters import Command 
 from aiogram.types import Message
-from aiogram import Bot, html
+from aiogram import Bot, html, F, types
 from os import getenv
 from dotenv import load_dotenv
 
@@ -31,14 +33,36 @@ STEP_MAP = {
 }
 
 def init_ansible(bot):
-    @bot.message(Command("update_supdemo"))
-    async def update(message: Message):
-        
-        sent_message = await message.answer(f"Обновление Sup_demo\n\n\
+    async def confirm_kb():
+        builder = InlineKeyboardBuilder()
+        builder.add(InlineKeyboardButton(
+            text="Да",
+            callback_data="update_supdemo"
+        ))
+        builder.add(InlineKeyboardButton(
+            text="Нет",
+            callback_data="cancel_supdemo"
+        ))
+
+        return builder.as_markup()
+
+    @bot.callback_query(F.data == "update_supdemo")
+    async def update_supdemo(callback: types.CallbackQuery):
+        await callback.message.delete()
+        sent_message = await callback.message.answer(f"Обновление Sup_demo\n\n\
 Прогресс:\
 \n\n", parse_mode=ParseMode.HTML)
         
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id, sent_message.text)
+
+    @bot.callback_query(F.data == "cancel_supdemo")
+    async def cancel_supdemo(callback: types.CallbackQuery):
+        await callback.message.delete()
+
+    @bot.message(Command("update_supdemo"))
+    async def update(message: Message):
+        await message.answer("Хотите обновить Sup_demo?", reply_markup=await confirm_kb())
+        
 
     async def run_ansible_playbook(chat_id, message_id, original_text):
         path_to_playbook = os.path.join("/app", "ansible", "update.yml")
