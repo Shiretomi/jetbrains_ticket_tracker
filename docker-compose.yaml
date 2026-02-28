@@ -50,6 +50,7 @@ services:
       - redis
     volumes:
       - ./ansible/:/app/ansible/
+      - ./config:/app/config
     networks:
       - bot_network
 
