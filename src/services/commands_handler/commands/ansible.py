@@ -17,12 +17,17 @@ BOT = Bot(TOKEN)
 
 ERROR = "fatal: ["
 CURRENT_HASH_TRIGGER = '"msg": "Current hash: '
+NEW_HASH_TRIGGER = '"msg": "New hash: '
 
 STEP_MAP = {
     "TASK [Find installer in repo.int.ntl": "🔍 Ищу инсталлятор в репозитории...",
     "TASK [Cleanup old": "🧹 Очищаю старые файлы, если остались...",
     "TASK [Download installer": "⚙️ Скачиваю инсталлер на сервер...",
     "TASK [Unzip installer": "📦 Вытаскиваю образы из инсталлера...",
+    "TASK [Load multi": "🗄 Загружаю новые образы multi...",
+    "TASK [Load universe": "🗄 Загружаю новые образы universe...",
+    "TASK [Last cleanup": "🧹 Очищаю временные файлы...",
+    "TASK [Restart ": "🐳 Перезапускаю контейнеры...",
 }
 
 def init_ansible(bot):
@@ -51,6 +56,8 @@ def init_ansible(bot):
         last_status = ""
 
         current_hash = ""
+        new_hash = ""
+
         error_msg = ""
 
         while True:
@@ -70,6 +77,8 @@ def init_ansible(bot):
                     error_msg = decoded_line
                 if CURRENT_HASH_TRIGGER in decoded_line:
                     current_hash = decoded_line.split(CURRENT_HASH_TRIGGER)[1][:-1]
+                if NEW_HASH_TRIGGER in decoded_line:
+                    new_hash = decoded_line.split(NEW_HASH_TRIGGER)[1][:-1]
 
         
             #обновление статуса бота
@@ -101,15 +110,19 @@ def init_ansible(bot):
         time_str = f"{minutes} мин. {seconds} сек." if minutes > 0 else f"{seconds}с"
 
         if process.returncode == 0:
-            builds = f'{html.code(current_hash)} -> {html.code("new-hash")}'
-            message = f'{text_to_edit} ✅\n\n✅Обновление успешно завершено!\n\n\
-Билд: {builds} (старый -> новый)\n\
-Обновлено за: {time_str}'
+            builds = f'{html.code(current_hash)} >> {html.code(new_hash)}'
+            message = f'{text_to_edit} ✅\n\n✅ Обновление успешно завершено!\n\nВерсия билда\n{builds}\n\nОбновлено за\n{time_str}'
             
             await BOT.edit_message_text(
                 chat_id=chat_id,
                 message_id=message_id,
                 text=message,
+                parse_mode=ParseMode.HTML
+                )
+            await BOT.send_message(
+                chat_id=chat_id,
+                reply_to_message_id=message_id,
+                text="✅ Обновление завершено успешно!",
                 parse_mode=ParseMode.HTML
                 )
         else:
@@ -119,3 +132,9 @@ def init_ansible(bot):
                 text=f'{text_to_edit}❌\n\n❌ Ошибка при обновлении:\n{html.expandable_blockquote(error_msg)}',
                 parse_mode=ParseMode.HTML
             )
+            await BOT.send_message(
+                chat_id=chat_id,
+                reply_to_message_id=message_id,
+                text="❌ Обновление завершено с ошибками",
+                parse_mode=ParseMode.HTML
+                )
