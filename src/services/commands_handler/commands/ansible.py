@@ -107,7 +107,7 @@ def init_ansible(bot):
         duration = int(end_time - start_time)
         minutes = duration // 60
         seconds = duration % 60
-        time_str = f"{minutes} мин. {seconds} сек." if minutes > 0 else f"{seconds}сек."
+        time_str = f"{minutes} мин. {seconds} сек." if minutes > 0 else f"{seconds} сек."
 
         if process.returncode == 0:
             builds = f'{html.code(current_hash)} >> {html.code(new_hash)}'
