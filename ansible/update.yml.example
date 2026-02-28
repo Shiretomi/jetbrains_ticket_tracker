@@ -1,0 +1,109 @@
+---
+- name: Update images and restart docker containers
+  hosts: ntechbot #имя хоста из hosts.ini
+  gather_facts: no
+  become: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.8 #интерпритатор питона на целевом хосте, нужен минимум 3.8
+    installer_url: "http://repo.int.ntl/" #путь до репы
+    destination: "ffmulti-2.4.1/" #директория на репе, куда качать
+
+    #DEFAULT /tmp/
+    tmp_folder: "/mnt/ffdata/" # папка, где ансибл будет хранить свои временные файлы и куда будет качаться инсталлер
+    
+    container_name: "findface-multi_findface-multi-ui_1" # имя контейнера UI на хосте (пока что хардкод имя TODO: вытаскивать динамически)
+    hash_path: /usr/share/findface-security-ui/ui-static/js/index*" # НЕ ТРОГАТЬ 
+
+  tasks:
+    - name: Get hash old
+      shell: |
+        docker exec findface-multi_findface-multi-ui_1 sh -c "grep -aoP 'APP_BUILD_VERSION:\"\K[^\"]+' /usr/share/findface-security-ui/ui-static/js/index* | head -n 1"
+      register: current_hash
+      changed_when: false
+
+    - name: Display the extracted version
+      debug:
+        msg: "Current hash: {{ current_hash.stdout }}"
+
+    - name: Find installer in repo.int.ntl
+      uri:
+        url: "{{ installer_url }}{{ destination }}"
+        return_content: yes
+      register: repo_response  
+
+    - name: Extract installer name
+      set_fact:
+        installer_name: "{{ repo_response.content | regex_findall('findface-multi-and-server[^\" ]*') | first}}"
+      when: repo_response.status == 200
+
+    - name: Cleanup old installer if exists
+      file:
+        path: "{{ tmp_folder }}{{ item }}"
+        state: absent
+      with_items:
+        - "installer_ansible.run"
+        - "tmp_installer_ff"
+        - "unzip.log"
+
+    - name: Download installer via wget (No checksum wait)
+      shell: |
+        wget -q "{{ installer_url }}{{ destination }}{{ installer_name }}" -O "{{ tmp_folder }}installer_ansible.run"
+      async: 14400
+      poll: 0
+      register: download_job
+
+    - name: Wait for download
+      async_status:
+        jid: "{{ download_job.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 2000
+      delay: 10
+
+    - name: Create extraction directory
+      file:
+        path: "{{ tmp_folder }}tmp_installer_ff"
+        state: directory
+        mode: '0755'
+
+    - name: Unzip installer
+      shell: "unzip -o {{ tmp_folder }}installer_ansible.run -d {{ tmp_folder }}tmp_installer_ff > {{ tmp_folder }}unzip.log 2>&1"
+      async: 1800
+      poll: 10
+      register: unzip_result
+
+    - name: Load multi images via xargs
+      shell: |
+        ls "{{ tmp_folder }}tmp_installer_ff/images/docker.int.ntl/ntech/multi/multi/" | xargs -I % docker load -i "{{ tmp_folder }}tmp_installer_ff/images/docker.int.ntl/ntech/multi/multi/%"
+      args:
+        executable: /bin/bash
+
+    - name: Load universe images via xargs
+      shell: |
+        ls "{{ tmp_folder }}tmp_installer_ff/images/docker.int.ntl/ntech/universe/" | xargs -I % docker load -i "{{ tmp_folder }}tmp_installer_ff/images/docker.int.ntl/ntech/universe/%"
+      args:
+        executable: /bin/bash
+      
+    - name: Last cleanup 
+      file:
+        path: "{{ tmp_folder }}{{ item }}"
+        state: absent
+      with_items:
+        - "installer_ansible.run"
+        - "tmp_installer_ff"
+        - "unzip.log"
+
+    - name: Restart docker-compose.yml file
+      shell: "docker-compose down && docker-compose up -d"
+      args:
+        chdir: /opt/findface-multi/
+
+    - name: Get hash new
+      shell: |
+        docker exec findface-multi_findface-multi-ui_1 sh -c "grep -aoP 'APP_BUILD_VERSION:\"\K[^\"]+' /usr/share/findface-security-ui/ui-static/js/index* | head -n 1"
+      register: new_hash
+      changed_when: false
+
+    - name: Display the extracted version
+      debug:
+        msg: "New hash: {{ new_hash.stdout }}"
