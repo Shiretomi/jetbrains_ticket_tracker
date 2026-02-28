@@ -4,6 +4,7 @@ sys.path.append("./src")
 from dotenv import load_dotenv
 from commands.dev_and_fun import init_dev
 from commands.callbacks import init_callbacks
+from commands.ansible import init_ansible
 from aiogram import Bot, Dispatcher
 from os import getenv
 
@@ -21,6 +22,7 @@ dp = Dispatcher()
 #Инициализацию команд вписывать сюда
 init_dev(dp)
 init_callbacks(dp)
+init_ansible(dp)
 
 async def main() -> None:
     await dp.start_polling(BOT)
