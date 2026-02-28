@@ -1,6 +1,6 @@
 ---
 - name: Update images and restart docker containers
-  hosts: ntechbot #имя хоста из hosts.ini
+  hosts: hostname #имя хоста из hosts.ini
   gather_facts: no
   become: no
   vars:
@@ -9,7 +9,7 @@
     destination: "ffmulti-2.4.1/" #директория на репе, куда качать
 
     #DEFAULT /tmp/
-    tmp_folder: "/mnt/ffdata/" # папка, где ансибл будет хранить свои временные файлы и куда будет качаться инсталлер
+    tmp_folder: "/tmp/" # папка, где ансибл будет хранить свои временные файлы и куда будет качаться инсталлер
     
     container_name: "findface-multi_findface-multi-ui_1" # имя контейнера UI на хосте (пока что хардкод имя TODO: вытаскивать динамически)
     hash_path: /usr/share/findface-security-ui/ui-static/js/index*" # НЕ ТРОГАТЬ 
