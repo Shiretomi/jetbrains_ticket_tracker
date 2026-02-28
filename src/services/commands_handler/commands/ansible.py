@@ -2,6 +2,7 @@ import asyncio
 import os
 import time
 
+from common.utils import acl
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
 from aiogram.enums import ParseMode
@@ -46,7 +47,7 @@ def init_ansible(bot):
 
         return builder.as_markup()
 
-    @bot.callback_query(F.data == "update_supdemo")
+    @bot.callback_query(F.data == "update_supdemo", acl.isSupportTeam())
     async def update_supdemo(callback: types.CallbackQuery):
         await callback.message.delete()
         sent_message = await callback.message.answer(f"Обновление Sup_demo\n\n\
@@ -55,11 +56,11 @@ def init_ansible(bot):
         
         await run_ansible_playbook(sent_message.chat.id, sent_message.message_id, sent_message.text)
 
-    @bot.callback_query(F.data == "cancel_supdemo")
+    @bot.callback_query(F.data == "cancel_supdemo", acl.isSupportTeam())
     async def cancel_supdemo(callback: types.CallbackQuery):
         await callback.message.delete()
 
-    @bot.message(Command("update_supdemo"))
+    @bot.message(Command("update_supdemo"), acl.isSupportTeam())
     async def update(message: Message):
         await message.answer("Хотите обновить Sup_demo?", reply_markup=await confirm_kb())
         
