@@ -60,7 +60,7 @@ def init_ansible(bot):
     async def cancel_supdemo(callback: types.CallbackQuery):
         await callback.message.delete()
 
-    @bot.message(Command("update_supdemo"), acl.isSupportTeam())
+    @bot.message(Command("update_supdemo"), acl.isSupportTeam(), acl.isTimeToUpdate())
     async def update(message: Message):
         await message.answer("Хотите обновить Sup_demo?", reply_markup=await confirm_kb())
         
