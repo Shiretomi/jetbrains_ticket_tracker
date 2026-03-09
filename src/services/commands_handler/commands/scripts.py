@@ -1,14 +1,24 @@
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandStart
+from aiogram.enums import ParseMode
 from aiogram.types import Message
 from common.utils import acl
+from aiogram import html
 from loguru import logger
+from os import getenv
+from dotenv import load_dotenv
 
+import requests
 import os, re
 
-def init_scripts(bot):
-    SCRIPTS_FOLDER = "./scripts"
+load_dotenv()
 
-    DESCRIPTION_PATTERN = re.compile(r'^#\s*Description:\s*(.*)$', re.IGNORECASE | re.MULTILINE)
+SCRIPTS_FOLDER = "./scripts"
+    
+BOT_NAME = requests.get(f"https://api.telegram.org/bot{getenv('TELEGRAM_TOKEN')}/getMe").json()['result']['username']
+
+DESCRIPTION_PATTERN = re.compile(r'^#\s*Description:\s*(.*)$', re.IGNORECASE | re.MULTILINE)
+
+def init_scripts(bot):
 
     def list_scripts():
         scripts_info = []
@@ -33,13 +43,20 @@ def init_scripts(bot):
             except Exception as e:
                 logger.error(type(e).__name__)
 
-            scripts_info.append(f"{script} - {description}")
+            payload = script.replace('.', '_')
+            link = f"https://t.me/{BOT_NAME}?start={payload}"
+
+            scripts_info.append(f"{html.link(script, link)} - {html.italic(description)}")
         
         return scripts_info
 
     @bot.message(Command("get_scripts"), acl.isSupportTeam())
     async def get_scripts(message: Message):
-        msg = "Для получения ссылки на скрипт, нажмите на название скрипта.\n\n"
+        msg = html.bold("Для получения ссылки на скрипт, нажмите на название скрипта.\n\n")
         scripts = list_scripts()
         script_list = '\n'.join(scripts)
-        await message.answer(f"{msg}{script_list}")
+        await message.answer(f"{msg}{script_list}", parse_mode=ParseMode.HTML)
+
+    @bot.message(CommandStart(deep_link=True))
+    async def send_script(message: Message):
+        pass
