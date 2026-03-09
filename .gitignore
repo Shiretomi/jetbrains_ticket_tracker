@@ -223,3 +223,6 @@ SLA_broken_tickets.txt
 hosts.ini
 id_rsa_service
 update.yml
+
+# scripts
+scripts

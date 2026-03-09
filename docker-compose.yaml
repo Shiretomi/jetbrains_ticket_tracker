@@ -51,6 +51,7 @@ services:
     volumes:
       - ./ansible/:/app/ansible/
       - ./config:/app/config
+      - ./scripts:/app/scripts
     networks:
       - bot_network
 
