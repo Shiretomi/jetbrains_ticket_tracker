@@ -7,10 +7,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 from aiogram import types
 from common.utils import tickets_api
-from aiogram import Bot
-
+from aiogram import Bot, html
+from aiogram.enums import ParseMode
 
 API = tickets_api.TicketsAPI()
+
+SEPARATOR = "_bot-tech-separator_"
 
 class Select(StatesGroup):
     next_option = State()
@@ -59,3 +61,11 @@ def init_callbacks(bot):
         data = await state.get_data()
         await callback.message.edit_reply_markup(callback.inline_message_id, reply_markup=await spam_button(data.get("ticket_id")))
         await state.clear()
+
+    @bot.callback_query(F.data.startswith('download_script'))
+    async def generate_link(callback: types.CallbackQuery):
+        script_name = callback.data.split(":")[1].replace(SEPARATOR, '.')
+        link = "" #async func for pastebin
+        msg = html.bold("Ссылка для скачивания и запуска:\n")
+        command = f"curl -sSL {link} | bash"
+        await callback.message.answer(f"{msg}{html.pre(command)}", reply_to_message_id=callback.message.message_id, parse_mode=ParseMode.HTML)
