@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 from aiogram import types
 from common.utils import tickets_api
-from common.utils import uploads
+from common.utils import uploads, acl
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
 
@@ -65,7 +65,7 @@ def init_callbacks(bot):
         await callback.message.edit_reply_markup(callback.inline_message_id, reply_markup=await spam_button(data.get("ticket_id")))
         await state.clear()
 
-    @bot.callback_query(F.data.startswith('download_script'))
+    @bot.callback_query(F.data.startswith('download_script'), acl.isSupportTeam())
     async def generate_link(callback: types.CallbackQuery):
         script_name = callback.data.split(":")[1].replace(SEPARATOR, '.')
         path = os.path.join(SCRIPTS_FOLDER, script_name)
