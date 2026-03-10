@@ -84,3 +84,8 @@ def init_callbacks(bot):
             await callback.message.answer(f"{msg}{html.pre(command)}", reply_to_message_id=callback.message.message_id, parse_mode=ParseMode.HTML)
         else:
             await callback.message.answer("❌ Ошибка при загрузке на Pastebin.")
+
+    @bot.callback_query(F.data == "cancel")
+    async def cancel(callback: types.CallbackQuery, state: FSMContext):
+        await state.clear()
+        await callback.message.answer("Операция отменена")
