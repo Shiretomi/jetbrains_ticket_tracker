@@ -63,6 +63,11 @@ def init_scripts(bot):
         
         return scripts_info
 
+    def write_script(script_name, code):
+        path = os.path.join(SCRIPTS_FOLDER, script_name)
+        with open(path, 'w') as f:
+            f.write(code)
+
     @bot.message(Command("get_scripts"), acl.isSupportTeam())
     async def get_scripts(message: Message):
         msg = html.bold("Для получения скрипта, нажмите на название скрипта.\n\n")
@@ -89,3 +94,16 @@ def init_scripts(bot):
             file = FSInputFile(path=path, filename=script_name)
             msg = f"{html.bold(script_name)}\nСкрипт большой, файл скрипта\n"
             await message.answer_document(caption=f"{msg}", parse_mode=ParseMode.HTML, reply_markup=keyboard, document=file)
+        
+    @bot.message(Command("add_script"), acl.isSupportTeam())
+    async def add_script(message: Message, command: CommandObject):
+        if command.args:
+            args = command.args.split(' ')
+            if len(args) >= 2:
+                if '.' in args[0]:
+                    code = " ".join(args[1:])
+                    write_script(args[0], code)
+                    await message.answer(f"Скрипт добавлен:\n{args[0]}\n{html.pre(code)}", parse_mode=ParseMode.HTML)
+                else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
+            else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
+        else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
