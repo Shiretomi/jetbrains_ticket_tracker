@@ -83,5 +83,4 @@ def init_scripts(bot):
             pass
 
         msg = f"{html.bold(script_name)}\nДля прямого использования в терминале:\n"
-        msg2 = "Для скачивания на удаленном хосте:\n"
-        await message.answer(f"{msg}{html.pre(script_content)}\n{msg2}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        await message.answer(f"{msg}{html.pre(script_content)}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
