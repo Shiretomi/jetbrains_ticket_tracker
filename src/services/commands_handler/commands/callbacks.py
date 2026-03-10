@@ -1,4 +1,4 @@
-import requests
+import requests, os
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
@@ -7,12 +7,15 @@ from aiogram.fsm.context import FSMContext
 from aiogram import F
 from aiogram import types
 from common.utils import tickets_api
+from common.utils import uploads
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
 
 API = tickets_api.TicketsAPI()
 
 SEPARATOR = "_bot-tech-separator_"
+
+SCRIPTS_FOLDER = "./scripts"
 
 class Select(StatesGroup):
     next_option = State()
@@ -65,7 +68,19 @@ def init_callbacks(bot):
     @bot.callback_query(F.data.startswith('download_script'))
     async def generate_link(callback: types.CallbackQuery):
         script_name = callback.data.split(":")[1].replace(SEPARATOR, '.')
-        link = "" #async func for pastebin
-        msg = html.bold("Ссылка для скачивания и запуска:\n")
-        command = f"curl -sSL {link} | bash"
-        await callback.message.answer(f"{msg}{html.pre(command)}", reply_to_message_id=callback.message.message_id, parse_mode=ParseMode.HTML)
+        path = os.path.join(SCRIPTS_FOLDER, script_name)
+
+        try:
+            with open(path, 'r', encoding="utf-8", errors="ignore") as f:
+                script_content = f.read()
+        except Exception as e:
+            pass
+
+        link = await uploads.upload_to_pastebin(script_name, script_content)
+        if link and link.startswith("https"):
+            link = link.replace("pastebin.com/", "pastebin.com/raw/")
+            msg = html.bold("Ссылка для скачивания и запуска:\n")
+            command = f"curl -sSL {link} | bash"
+            await callback.message.answer(f"{msg}{html.pre(command)}", reply_to_message_id=callback.message.message_id, parse_mode=ParseMode.HTML)
+        else:
+            await callback.message.answer("❌ Ошибка при загрузке на Pastebin.")
