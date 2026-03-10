@@ -3,8 +3,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
 from aiogram.enums import ParseMode
 from aiogram.types import Message, FSInputFile
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 from common.utils import acl
-from aiogram import html
+from aiogram import html, F, Bot
 from loguru import logger
 from os import getenv
 from dotenv import load_dotenv
@@ -22,6 +24,12 @@ DESCRIPTION_PATTERN = re.compile(r'^#\s*Description:\s*(.*)$', re.IGNORECASE | r
 
 SEPARATOR = "_bot-tech-separator_"
 
+class AddScript(StatesGroup):
+    send_script = State()
+    send_name = State()
+    send_description = State()
+    send_verify = State()
+
 def init_scripts(bot):
     async def download_script_kb(script_name):
         builder = InlineKeyboardBuilder()
@@ -31,7 +39,31 @@ def init_scripts(bot):
         ))
 
         return builder.as_markup()
+    
+    async def cancel_kb():
+        builder = InlineKeyboardBuilder()
+        builder.add(InlineKeyboardButton(
+            text="❌ Отмена",
+            callback_data="cancel"
+        ))
 
+        return builder.as_markup()
+
+    def insert_description(path: str, description: str) -> str:
+        header = f"# Description: {description}\n"
+        with open(path, 'r') as f:
+            content = f.read()
+        
+        lines = content.splitlines()
+
+        if lines and lines[0].startswith("#!"):
+            lines.insert(1, header)
+        else:
+            lines.insert(0, header)
+        
+        rdy_content = "\n".join(lines)
+        with open(path, 'w') as f:
+            f.write(rdy_content)
 
     def list_scripts():
         scripts_info = []
@@ -94,16 +126,51 @@ def init_scripts(bot):
             file = FSInputFile(path=path, filename=script_name)
             msg = f"{html.bold(script_name)}\nСкрипт большой, файл скрипта\n"
             await message.answer_document(caption=f"{msg}", parse_mode=ParseMode.HTML, reply_markup=keyboard, document=file)
-        
+
+
+    # ДОБАВЛЕНИЕ СКРИПТОВ    
     @bot.message(Command("add_script"), acl.isSupportTeam())
-    async def add_script(message: Message, command: CommandObject):
-        if command.args:
-            args = command.args.split(' ')
-            if len(args) >= 2:
-                if '.' in args[0]:
-                    code = " ".join(args[1:])
-                    write_script(args[0], code)
-                    await message.answer(f"Скрипт добавлен:\n{args[0]}\n{html.pre(code)}", parse_mode=ParseMode.HTML)
-                else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
-            else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
-        else: await message.answer("Использование:\n/add_script название_скрипта.sh ```your script code```")
+    async def add_script(message: Message, state: FSMContext):
+        code_example = html.pre('#!/bin/bash\n\nsome_useful_code\n\necho \"something\"')
+        await message.answer(f'{html.bold("Пришлите код в формате")}{code_example}\nЛибо файл со скриптом.', parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
+        await state.set_state(AddScript.send_script)
+
+    @bot.message(AddScript.send_script, acl.isSupportTeam(), F.text | F.document)
+    async def add_script_step_one(message: Message, state: FSMContext):
+        name_example = html.italic(f'Напишите название в формате {html.bold("example_name.sh")}')
+        await message.answer(f"{html.bold('Как будет называться скрипт?')}\n{name_example}", parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
+        if message.document:
+            await state.update_data(script_type="file", file_id=message.document.file_id)
+            await state.set_state(AddScript.send_name)
+        elif message.text:
+            await state.update_data(script_type="text", script_content=message.text)
+            await state.set_state(AddScript.send_name)        
+
+    @bot.message(AddScript.send_name, acl.isSupportTeam())
+    async def add_script_step_two(message: Message, state: FSMContext):
+        await message.answer(html.bold("Добавьте описание для скрипта."), parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
+        await state.update_data(name=message.text)
+        await state.set_state(AddScript.send_description)
+      
+    @bot.message(AddScript.send_description, acl.isSupportTeam())
+    async def add_script_step_two(message: Message, state: FSMContext, bot: Bot):
+        await state.update_data(description=message.text)
+        final_data = await state.get_data()
+        name = final_data.get("name")
+        description = final_data.get("description")
+        path = os.path.join(SCRIPTS_FOLDER, name)
+        
+        script_type = final_data.get("script_type")
+        if script_type == "text":
+            with open(path, 'w', encoding="utf-8", errors="ignore") as f:
+                f.write(final_data.get("script_content"))
+
+        if script_type == "file":
+            file_id = final_data.get('file_id')
+            file = await bot.get_file(file_id)
+            await bot.download_file(file.file_path, path)
+        
+        insert_description(path, description)
+
+        await state.clear()
+        await message.answer(f"Скрипт сохранен!\n{name} - {description}", parse_mode=ParseMode.HTML)
