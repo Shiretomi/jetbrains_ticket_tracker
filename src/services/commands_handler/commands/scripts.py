@@ -2,7 +2,7 @@ from aiogram.filters import Command, CommandStart, CommandObject
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
 from aiogram.enums import ParseMode
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from common.utils import acl
 from aiogram import html
 from loguru import logger
@@ -70,7 +70,7 @@ def init_scripts(bot):
         script_list = '\n'.join(scripts)
         await message.answer(f"{msg}{script_list}", parse_mode=ParseMode.HTML)
 
-    @bot.message(CommandStart(deep_link=True))
+    @bot.message(CommandStart(deep_link=True), acl.isSupportTeam())
     async def send_script(message: Message, command: CommandObject):
         keyboard = await download_script_kb(command.args)
         script_name = command.args.replace(SEPARATOR, ".")
@@ -82,5 +82,10 @@ def init_scripts(bot):
         except Exception as e:
             pass
 
-        msg = f"{html.bold(script_name)}\nДля прямого использования в терминале:\n"
-        await message.answer(f"{msg}{html.pre(script_content)}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        try:
+            msg = f"{html.bold(script_name)}\nДля прямого использования в терминале:\n"
+            await message.answer(f"{msg}{html.pre(script_content)}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
+        except Exception as e:
+            file = FSInputFile(path=path, filename=script_name)
+            msg = f"{html.bold(script_name)}\nСкрипт большой, файл скрипта\n"
+            await message.answer_document(caption=f"{msg}", parse_mode=ParseMode.HTML, reply_markup=keyboard, document=file)
