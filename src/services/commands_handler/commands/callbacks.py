@@ -80,7 +80,13 @@ def init_callbacks(bot):
         if link and link.startswith("https"):
             link = link.replace("pastebin.com/", "pastebin.com/raw/")
             msg = html.bold("Ссылка для скачивания и запуска:\n")
-            command = f"curl -sSL {link} | bash"
+            
+            match script_name:
+                case script_name.endswith(".py"):
+                    command = f"curl -sSL {link} | $(which python3)"
+                case _:
+                    command = f"curl -sSL {link} | bash"
+
             await callback.message.answer(f"{msg}{html.pre(command)}", reply_to_message_id=callback.message.message_id, parse_mode=ParseMode.HTML)
         else:
             await callback.message.answer("❌ Ошибка при загрузке на Pastebin.")
