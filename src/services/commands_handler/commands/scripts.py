@@ -121,8 +121,16 @@ def init_scripts(bot):
 
         try:
             msg = f"{html.bold(script_name)}\nДля прямого использования в терминале:\n"
-            await message.answer(f"{msg}{html.pre(script_content)}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
+            
+            match script_name:
+                case script_name if script_name.endswith(".py"):
+                    script_content = f"($which python) << EOF\n{script_content}\nEOF"
+                case _:
+                    pass
+            
+            await message.answer(f"{msg}{html.pre(html.quote(script_content))}", parse_mode=ParseMode.HTML, reply_markup=keyboard)
         except Exception as e:
+            logger.error(e)
             file = FSInputFile(path=path, filename=script_name)
             msg = f"{html.bold(script_name)}\nСкрипт большой, файл скрипта\n"
             await message.answer_document(caption=f"{msg}", parse_mode=ParseMode.HTML, reply_markup=keyboard, document=file)
