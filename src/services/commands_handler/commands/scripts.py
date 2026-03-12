@@ -150,19 +150,29 @@ def init_scripts(bot):
         await message.answer(f"{html.bold('Как будет называться скрипт?')}\n{name_example}", parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
         if message.document:
             await state.update_data(script_type="file", file_id=message.document.file_id)
-            await state.set_state(AddScript.send_name)
+            await state.set_state(AddScript.send_verify)
         elif message.text:
             await state.update_data(script_type="text", script_content=message.text)
-            await state.set_state(AddScript.send_name)        
+            await state.set_state(AddScript.send_verify)
+
+    @bot.message(AddScript.send_verify, acl.isSupportTeam())
+    async def check_if_exists(message: Message, state: FSMContext):
+        path = os.path.join(SCRIPTS_FOLDER, message.text)
+        if os.path.exists(path):
+            await message.answer(f"Скрипт с таким именем существует, придумайте другое название.\n\n{html.bold('Как будет называться скрипт?')}", parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
+        else:
+            await state.update_data(name=message.text)
+            await state.set_state(AddScript.send_name)
+            await add_script_step_two(message=message, state=state)
 
     @bot.message(AddScript.send_name, acl.isSupportTeam())
     async def add_script_step_two(message: Message, state: FSMContext):
         await message.answer(html.bold("Добавьте описание для скрипта."), parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
         await state.update_data(name=message.text)
         await state.set_state(AddScript.send_description)
-      
+
     @bot.message(AddScript.send_description, acl.isSupportTeam())
-    async def add_script_step_two(message: Message, state: FSMContext, bot: Bot):
+    async def add_script_step_three(message: Message, state: FSMContext, bot: Bot):
         await state.update_data(description=message.text)
         final_data = await state.get_data()
         name = final_data.get("name")
