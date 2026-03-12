@@ -22,7 +22,8 @@ BOT_NAME = requests.get(f"https://api.telegram.org/bot{getenv('TELEGRAM_TOKEN')}
 
 DESCRIPTION_PATTERN = re.compile(r'^#\s*Description:\s*(.*)$', re.IGNORECASE | re.MULTILINE)
 
-SEPARATOR = "_bot-tech-separator_"
+SEPARATOR_SEND = "_bot-tech-send-separator_"
+SEPARATOR_REM = "_bot-tech-rem-separator_"
 
 class AddScript(StatesGroup):
     send_script = State()
@@ -65,7 +66,7 @@ def init_scripts(bot):
         with open(path, 'w') as f:
             f.write(rdy_content)
 
-    def list_scripts():
+    def list_scripts(separator):
         scripts_info = []
         for script in os.listdir(SCRIPTS_FOLDER):
             path = os.path.join(SCRIPTS_FOLDER, script)
@@ -88,7 +89,7 @@ def init_scripts(bot):
             except Exception as e:
                 logger.error(type(e).__name__)
 
-            payload = script.replace('.', SEPARATOR)
+            payload = script.replace('.', separator)
             link = f"https://t.me/{BOT_NAME}?start={payload}"
 
             scripts_info.append(f"{html.link(script, link)} - {html.italic(description)}")
@@ -103,14 +104,14 @@ def init_scripts(bot):
     @bot.message(Command("get_scripts"), acl.isSupportTeam())
     async def get_scripts(message: Message):
         msg = html.bold("Для получения скрипта, нажмите на название скрипта.\n\n")
-        scripts = list_scripts()
+        scripts = list_scripts(SEPARATOR_SEND)
         script_list = '\n'.join(scripts)
         await message.answer(f"{msg}{script_list}", parse_mode=ParseMode.HTML)
 
-    @bot.message(CommandStart(deep_link=True), acl.isSupportTeam())
+    @bot.message(CommandStart(deep_link=True), acl.isSupportTeam(), F.text.contains(SEPARATOR_SEND))
     async def send_script(message: Message, command: CommandObject):
         keyboard = await download_script_kb(command.args)
-        script_name = command.args.replace(SEPARATOR, ".")
+        script_name = command.args.replace(SEPARATOR_SEND, ".")
         path = os.path.join(SCRIPTS_FOLDER, script_name)
         script_content = "Ошибка чтения"
         try:
@@ -137,7 +138,7 @@ def init_scripts(bot):
 
 
     # ДОБАВЛЕНИЕ СКРИПТОВ    
-    @bot.message(Command("add_script"), acl.isSupportTeam())
+    @bot.message(Command("add_scripts"), acl.isSupportTeam())
     async def add_script(message: Message, state: FSMContext):
         code_example = html.pre('#!/bin/bash\n\nsome_useful_code\n\necho \"something\"')
         supported_languages = f"{html.bold('Поддерживаемые языки:')} bash, python"
@@ -192,4 +193,21 @@ def init_scripts(bot):
         insert_description(path, description)
 
         await state.clear()
-        await message.answer(f"Скрипт сохранен!\n{name} - {description}", parse_mode=ParseMode.HTML)
+        await message.answer(f"✅ Скрипт сохранен!\n\n{name} - {description}", parse_mode=ParseMode.HTML)
+
+    # УДАЛЕНИЕ СКРИПТОВ
+    @bot.message(Command("rem_scripts"), acl.isSupportTeam())
+    async def rem_script(message: Message):
+        msg = html.bold("Для удаления скрипта, нажмите на его имя.\n\n")
+        scripts = list_scripts(SEPARATOR_REM)
+        script_list = '\n'.join(scripts)
+        await message.answer(f"{msg}{script_list}", parse_mode=ParseMode.HTML)
+
+    @bot.message(CommandStart(deep_link=True), acl.isSupportTeam(), F.text.contains(SEPARATOR_REM))
+    async def remove_script(message: Message, command: CommandObject):
+        msg = "✅ Скрипт удален, прикладываю его копию"
+        script_name = command.args.replace(SEPARATOR_REM, ".")
+        path = os.path.join(SCRIPTS_FOLDER, script_name)
+        file = FSInputFile(path=path, filename=script_name)
+        await message.answer_document(caption=f"{msg}", parse_mode=ParseMode.HTML, document=file)
+        os.remove(path)

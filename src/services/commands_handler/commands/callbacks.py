@@ -13,7 +13,7 @@ from aiogram.enums import ParseMode
 
 API = tickets_api.TicketsAPI()
 
-SEPARATOR = "_bot-tech-separator_"
+SEPARATOR_SEND = "_bot-tech-send-separator_"
 
 SCRIPTS_FOLDER = "./scripts"
 
@@ -67,7 +67,7 @@ def init_callbacks(bot):
 
     @bot.callback_query(F.data.startswith('download_script'), acl.isSupportTeam())
     async def generate_link(callback: types.CallbackQuery):
-        script_name = callback.data.split(":")[1].replace(SEPARATOR, '.')
+        script_name = callback.data.split(":")[1].replace(SEPARATOR_SEND, '.')
         path = os.path.join(SCRIPTS_FOLDER, script_name)
 
         try:
