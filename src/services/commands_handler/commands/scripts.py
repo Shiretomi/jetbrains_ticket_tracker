@@ -132,7 +132,8 @@ def init_scripts(bot):
     @bot.message(Command("add_script"), acl.isSupportTeam())
     async def add_script(message: Message, state: FSMContext):
         code_example = html.pre('#!/bin/bash\n\nsome_useful_code\n\necho \"something\"')
-        await message.answer(f'{html.bold("Пришлите код в формате")}{code_example}\nЛибо файл со скриптом.', parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
+        supported_languages = f"{html.bold('Поддерживаемые языки:')} bash, python"
+        await message.answer(f'{html.bold("Пришлите код в формате")}{code_example}\nЛибо файл со скриптом.\n\n{supported_languages}', parse_mode=ParseMode.HTML, reply_markup=await cancel_kb())
         await state.set_state(AddScript.send_script)
 
     @bot.message(AddScript.send_script, acl.isSupportTeam(), F.text | F.document)

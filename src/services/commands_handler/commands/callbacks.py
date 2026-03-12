@@ -82,7 +82,7 @@ def init_callbacks(bot):
             msg = html.bold("Ссылка для скачивания и запуска:\n")
             
             match script_name:
-                case script_name.endswith(".py"):
+                case script_name if script_name.endswith(".py"):
                     command = f"curl -sSL {link} | $(which python3)"
                 case _:
                     command = f"curl -sSL {link} | bash"
