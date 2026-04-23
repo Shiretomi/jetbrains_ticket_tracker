@@ -11,7 +11,6 @@ from common.models.ticket import Ticket
 from datetime import datetime as dt 
 
 import redis
-import yaml
 import urllib3
 import asyncio
 import time
@@ -37,14 +36,6 @@ r = redis.Redis(
     decode_responses=True,
     db=1
 )
-
-try:
-    with open('config/settings.yaml', 'r', encoding="utf-8") as data:
-        config = yaml.load(data, Loader=yaml.FullLoader)
-
-    logger.info("YAML config successfully loaded.")
-except Exception as e:
-    logger.error(f"Error while loading YAML: {e}")
 
 async def mention_broken_SLA(tickets):
     try:
