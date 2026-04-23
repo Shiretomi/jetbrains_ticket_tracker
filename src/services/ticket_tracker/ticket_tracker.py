@@ -55,7 +55,7 @@ async def mention_new_ticket(tickets):
         description_raw = clean_ms_word_html(ticket.description)[:3500] + "..."
         description = html.expandable_blockquote(html_py.escape(format_text(description_raw)).strip())
 
-        msg = f'''🟢 Новый тикет 🟢\n\n{html.bold("ID:")} {html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
+        msg = f'''🟢 Новый тикет 🟢\n\n{html.bold("ID:")} {html.link(html.bold(ticket.ticket_id), f"{config['youtrack']['url']}/tickets/{ticket.ticket_id}")}\
                 \n\n{html.bold("Название")}: {html_py.escape(format_text(ticket.name))}\
                 \n\
                 \n@ntl_support\

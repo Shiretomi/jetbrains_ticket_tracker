@@ -45,7 +45,7 @@ async def mention_broken_SLA(tickets):
                 ticket = Ticket.from_youtrack(ticket)
                 msg = f'''🔴 SLA просрочен 🔴\
                             \n\
-                            \n{html.link(html.bold(ticket.ticket_id), f"https://tracker.ntechlab.com/tickets/{ticket.ticket_id}")}\
+                            \n{html.link(html.bold(ticket.ticket_id), f"{config['youtrack']['url']}/tickets/{ticket.ticket_id}")}\
                             \n\
                             \n{ticket.name}\
                             \n\

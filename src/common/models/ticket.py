@@ -1,6 +1,3 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
-from sqlalchemy.ext.declarative import declarative_base
-from common.utils.database import Base
 from common.utils.config import config
 
 from datetime import datetime as dt
@@ -8,7 +5,7 @@ import requests
 
 class Ticket:
     TOKEN = config['youtrack_token']
-    BASE_URL="https://tracker.ntechlab.com/api/issues/"
+    BASE_URL=f"{config['youtrack']['url']}/api/issues/"
     HEADERS = {
         'Accept': 'application/json',
         f'Authorization': f'Bearer {TOKEN}',

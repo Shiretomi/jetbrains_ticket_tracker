@@ -28,8 +28,8 @@ def init_dev(bot):
 
     @bot.message(Command("tickets_count"))
     async def tickets_count(message: Message):
-        URL = "https://tracker.ntechlab.com/api/sortedIssues"
-        ATTRIBS = "?topRoot=100&skipRoot=0&flatten=true&query=state: {Waiting for L2}, {Waiting for developer}, {Waiting for delivery}, {Waiting for customer}, {On hold}, {Waiting for support}&folderId=108-0&fields=tree(id,summaryTextSearchResult(highlightRanges(startOffset,endOffset)))"
+        URL = f"{config['youtrack']['url']}/api/sortedIssues"
+        ATTRIBS = f"?topRoot=100&skipRoot=0&flatten=true&query=state: {config['youtrack']['lines']['to_count_as_open']} Assignee: -Unassigned&folderId=108-0&fields=tree(id,summaryTextSearchResult(highlightRanges(startOffset,endOffset)))"
         HEADERS = {
             'Accept': 'application/json',
             f'Authorization': f'Bearer {TOKEN}',
