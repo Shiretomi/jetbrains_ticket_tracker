@@ -13,18 +13,15 @@ from aiogram import Bot, html
 from aiogram.enums import ParseMode
 from loguru import logger
 from common.utils.tickets_api import TicketsAPI
-from os import getenv
-from dotenv import load_dotenv
+from common.utils.config import config
 
-load_dotenv()
-
-TOKEN = getenv("TELEGRAM_TOKEN")
-CHAT_ID = getenv("CHAT_ID")
-CHAT_THREAD = getenv("CHAT_THREAD")
+TOKEN = config['telegram_token']
+CHAT_ID = config['chat_id']
+CHAT_THREAD = config['chat_thread']
 
 #Redis
-REDIS_URL = getenv("REDIS_URL")
-REDIS_PORT = getenv("REDIS_PORT")
+REDIS_URL = config['redis_url']
+REDIS_PORT = config['redis_port']
 
 r = redis.Redis(
     host=REDIS_URL,

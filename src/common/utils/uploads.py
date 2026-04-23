@@ -1,10 +1,7 @@
 import aiohttp
-from os import getenv
-from dotenv import load_dotenv
+from .config import config
 
-load_dotenv()
-
-PASTEBIN_API_KEY = getenv("PASTEBIN_API_KEY")
+PASTEBIN_API_KEY = config['pastebin_api_key']
 
 async def upload_to_pastebin(title, content):
     url = "https://pastebin.com/api/api_post.php"

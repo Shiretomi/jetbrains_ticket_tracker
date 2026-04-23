@@ -1,20 +1,16 @@
 import sys
 sys.path.append("./src")
 
-from dotenv import load_dotenv
 from commands.dev_and_fun import init_dev
 from commands.callbacks import init_callbacks
 from commands.ansible import init_ansible
 from commands.scripts import init_scripts
 from aiogram import Bot, Dispatcher
-from os import getenv
+from common.utils.config import config
 
 import asyncio
 
-
-load_dotenv()
-
-TOKEN = getenv("TELEGRAM_TOKEN")
+TOKEN = config['telegram_token']
 
 BOT = Bot(token=TOKEN)
 

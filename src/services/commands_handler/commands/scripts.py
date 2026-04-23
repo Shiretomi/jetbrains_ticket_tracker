@@ -6,19 +6,16 @@ from aiogram.types import Message, FSInputFile
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from common.utils import acl
+from common.utils.config import config
 from aiogram import html, F, Bot
 from loguru import logger
-from os import getenv
-from dotenv import load_dotenv
 
 import requests
 import os, re
 
-load_dotenv()
-
 SCRIPTS_FOLDER = "./scripts"
     
-BOT_NAME = requests.get(f"https://api.telegram.org/bot{getenv('TELEGRAM_TOKEN')}/getMe").json()['result']['username']
+BOT_NAME = requests.get(f"https://api.telegram.org/bot{config['telegram_token']}/getMe").json()['result']['username']
 
 DESCRIPTION_PATTERN = re.compile(r'^#\s*Description:\s*(.*)$', re.IGNORECASE | re.MULTILINE)
 

@@ -3,30 +3,27 @@ sys.path.append("./src")
 
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
-from os import getenv
-from dotenv import load_dotenv
 from loguru import logger
 from common.utils.tickets_api import TicketsAPI
 from common.models.ticket import Ticket
-from datetime import datetime as dt 
+from common.utils.config import config
+from datetime import datetime as dt
 
 import redis
 import urllib3
 import asyncio
 import time
 
-load_dotenv()
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 #Telegram
-TOKEN = getenv("TELEGRAM_TOKEN")
-CHAT_ID = getenv("CHAT_ID")
-CHAT_THREAD = getenv("CHAT_THREAD")
+TOKEN = config['telegram_token']
+CHAT_ID = config['chat_id']
+CHAT_THREAD = config['chat_thread']
 
 #Redis
-REDIS_URL = getenv("REDIS_URL")
-REDIS_PORT = getenv("REDIS_PORT")
+REDIS_URL = config['redis_url']
+REDIS_PORT = config['redis_port']
 
 bot = Bot(TOKEN)
 

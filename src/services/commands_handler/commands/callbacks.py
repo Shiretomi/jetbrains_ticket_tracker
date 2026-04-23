@@ -1,4 +1,4 @@
-import requests, os
+import os
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
@@ -8,7 +8,7 @@ from aiogram import F
 from aiogram import types
 from common.utils import tickets_api
 from common.utils import uploads, acl
-from aiogram import Bot, html
+from aiogram import html
 from aiogram.enums import ParseMode
 
 API = tickets_api.TicketsAPI()

@@ -3,18 +3,15 @@ import os
 import time
 
 from common.utils import acl
+from common.utils.config import config
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
 from aiogram.enums import ParseMode
 from aiogram.filters import Command 
 from aiogram.types import Message
 from aiogram import Bot, html, F, types
-from os import getenv
-from dotenv import load_dotenv
 
-load_dotenv()
-
-TOKEN = getenv("TELEGRAM_TOKEN")
+TOKEN = config['telegram_token']
 
 BOT = Bot(TOKEN)
 

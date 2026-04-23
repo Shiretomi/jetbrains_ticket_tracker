@@ -1,17 +1,13 @@
-from dotenv import load_dotenv
-from os import getenv
-from loguru import logger
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from common.utils.database import Base
+from common.utils.config import config
 
 from datetime import datetime as dt
 import requests
 
-load_dotenv()
-
 class Ticket:
-    TOKEN = getenv("YOUTRACK_TOKEN")
+    TOKEN = config['youtrack_token']
     BASE_URL="https://tracker.ntechlab.com/api/issues/"
     HEADERS = {
         'Accept': 'application/json',

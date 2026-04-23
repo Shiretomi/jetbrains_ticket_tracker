@@ -6,9 +6,9 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.enums import ParseMode
 from common.models.ticket import Ticket
-from os import getenv
+from common.utils.config import config
 
-TOKEN = getenv('YOUTRACK_TOKEN')
+TOKEN = config['youtrack_token']
 
 def init_dev(bot):
 

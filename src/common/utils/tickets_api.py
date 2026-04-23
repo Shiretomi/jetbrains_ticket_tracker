@@ -1,5 +1,5 @@
-from os import getenv
 from common.models.ticket import Ticket
+from common.utils.config import config
 
 import json
 import requests
@@ -7,7 +7,7 @@ import requests
 POST_REQ = ""
 
 class TicketsAPI:
-    TOKEN = getenv('YOUTRACK_TOKEN')
+    TOKEN = config['youtrack_token']
     HEADERS = {
             'Accept': 'application/json',
             f'Authorization': f'Bearer {TOKEN}',
