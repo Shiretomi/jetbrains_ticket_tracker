@@ -3,10 +3,8 @@ version: '3.8'
 services:
   sla_tracker:
     build:
-      context: ./src/services/SLA_tracker/
-      dockerfile: Dockerfile
-      additional_contexts:
-        common: ./src/common/
+      context: .
+      dockerfile: src/services/SLA_tracker/Dockerfile
     container_name: sla_tracker_app
     restart: on-failure
     environment:
@@ -21,10 +19,8 @@ services:
 
   ticket_tracker:
     build:
-      context: ./src/services/ticket_tracker/
-      dockerfile: Dockerfile
-      additional_contexts:
-        common: ./src/common/
+      context: .
+      dockerfile: src/services/ticket_tracker/Dockerfile
     container_name: ticket_tracker_app
     restart: on-failure
     environment:
@@ -37,10 +33,8 @@ services:
 
   commands_handler:
     build:
-      context: ./src/services/commands_handler/
-      dockerfile: Dockerfile
-      additional_contexts:
-        common: ./src/common/
+      context: .
+      dockerfile: src/services/commands_handler/Dockerfile
     container_name: commands_handler_app
     restart: on-failure
     environment:

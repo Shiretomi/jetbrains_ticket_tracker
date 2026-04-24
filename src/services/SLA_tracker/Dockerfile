@@ -2,7 +2,7 @@ FROM python:3.11-slim as builder
 
 WORKDIR /app
 
-COPY ./requirements.txt .
+COPY ./src/services/SLA_tracker/requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 FROM python:3.11-slim
@@ -11,9 +11,11 @@ WORKDIR /app
 
 COPY --from=builder /root/.local /root/.local
 
-COPY ./SLA_tracking.py .
+COPY ./config ./config
 
-COPY --from=common . ./common
+COPY ./src/services/SLA_tracker/SLA_tracking.py .
+
+COPY ./src/common ./common
 
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONPATH=/app

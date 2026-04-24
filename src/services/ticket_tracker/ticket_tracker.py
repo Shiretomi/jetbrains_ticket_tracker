@@ -8,7 +8,7 @@ import html as html_py
 import re
 
 from bs4 import BeautifulSoup, Comment
-from utils import kb
+from components import kb
 from aiogram import Bot, html
 from aiogram.enums import ParseMode
 from loguru import logger
