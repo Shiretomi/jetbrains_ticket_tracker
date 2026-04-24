@@ -218,6 +218,7 @@ __marimo__/
 ticket_example
 
 SLA_broken_tickets.txt
+setting.yaml
 
 # ansible
 hosts.ini

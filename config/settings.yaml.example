@@ -1,0 +1,20 @@
+timezone: +3 #Указать + или - от GMT зоны (Для Москвы значение будет timezone: +3)
+
+youtrack:
+  url: "https://tracker.domain.com"
+  lines:
+    #Очереди, где лежат тикеты
+    to_count_as_open: '{Waiting for L2}, {Waiting for developer}, {Waiting for delivery}, {Waiting for customer}, {On hold}, {Waiting for support}'
+    to_track_from:
+      project: '{Support | Служба поддержки}'
+      sla_check: '{Waiting for L2}, {Waiting for support}'
+
+#Пользователи в трекере и их юзы в тг
+users-support-team:
+  "example.username@domain.com":
+    tg_user: "@Shiretomi"
+    line: "l1"
+
+  "example.username2@domain.com":
+    tg_user: "@example2"
+    line: "l2"
