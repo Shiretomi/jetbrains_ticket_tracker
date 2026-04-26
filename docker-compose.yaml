@@ -79,7 +79,7 @@ services:
     container_name: redis_exporter
     restart: on-failure
     environment:
-      - REDIS_ADDR=redis://redis:6379/1
+      - REDIS_ADDR=redis://redis:6379
     command:
       - '--check-keys=1=tickets:known,0=tickets:new'
     ports:
