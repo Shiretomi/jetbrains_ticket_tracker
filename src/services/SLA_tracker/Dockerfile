@@ -3,7 +3,12 @@ FROM python:3.11-slim as builder
 WORKDIR /app
 
 COPY ./src/services/SLA_tracker/requirements.txt .
+
+COPY ./requirements.txt ./requirements_common.txt
+
 RUN pip install --user --no-cache-dir -r requirements.txt
+
+RUN pip install --user --no-cache-dir -r requirements_common.txt
 
 FROM python:3.11-slim
 

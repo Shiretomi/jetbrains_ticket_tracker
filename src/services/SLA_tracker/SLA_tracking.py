@@ -8,6 +8,7 @@ from common.utils.tickets_api import TicketsAPI
 from common.models.ticket import Ticket
 from common.utils.config import config
 from datetime import datetime as dt
+from common.monitoring.metrics import start_metrics_server
 
 import redis
 import urllib3
@@ -82,4 +83,5 @@ async def polling():
         time.sleep(600)
 
 if __name__ == "__main__":
+    start_metrics_server()
     asyncio.run(polling())

@@ -14,6 +14,7 @@ from aiogram.enums import ParseMode
 from loguru import logger
 from common.utils.tickets_api import TicketsAPI
 from common.utils.config import config
+from common.monitoring.metrics import start_metrics_server
 
 TOKEN = config['telegram_token']
 CHAT_ID = config['chat_id']
@@ -79,4 +80,5 @@ async def polling():
         time.sleep(100)
 
 if __name__ == "__main__":
+    start_metrics_server()
     asyncio.run(polling())

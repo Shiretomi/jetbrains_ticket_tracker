@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY ./src/services/commands_handler/requirements.txt .
 
+COPY ./requirements.txt ./requirements_common.txt
+
 RUN pip install --user --no-cache-dir -r requirements.txt
+
+RUN pip install --user --no-cache-dir -r requirements_common.txt
 
 RUN pip install --user --no-cache-dir ansible-core
 

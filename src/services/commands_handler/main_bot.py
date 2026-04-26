@@ -7,6 +7,8 @@ from commands.ansible import init_ansible
 from commands.scripts import init_scripts
 from aiogram import Bot, Dispatcher
 from common.utils.config import config
+from common.monitoring.metrics import start_metrics_server
+from common.monitoring.middleware import MetricsMiddleware
 
 import asyncio
 
@@ -15,6 +17,8 @@ TOKEN = config['telegram_token']
 BOT = Bot(token=TOKEN)
 
 dp = Dispatcher()
+
+dp.message.middleware(MetricsMiddleware())
 
 #Инициализацию команд вписывать сюда
 init_dev(dp)
@@ -27,5 +31,6 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    start_metrics_server()
     asyncio.run(main())
           

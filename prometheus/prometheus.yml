@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'tickets_bot'
+    static_configs:
+      - targets: 
+        - 'sla_tracker_app:8000'
+        - 'ticket_tracker_app:8000'
+        - 'commands_handler_app:8000'

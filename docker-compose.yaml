@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   sla_tracker:
     build:
@@ -16,6 +14,7 @@ services:
       - ./config:/app/config
     networks:
       - bot_network
+      - monitoring
 
   ticket_tracker:
     build:
@@ -30,6 +29,7 @@ services:
       - redis
     networks:
       - bot_network
+      - monitoring
 
   commands_handler:
     build:
@@ -48,6 +48,7 @@ services:
       - ./scripts:/app/scripts
     networks:
       - bot_network
+      - monitoring
 
   redis:
     image: "redis:alpine"
@@ -57,10 +58,29 @@ services:
       - redis_data:/data
     networks:
       - bot_network
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: on-failure
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/etc/prometheus
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
 
 volumes:
   redis_data:
+  prometheus_data:
   
 networks:
   bot_network:
+    driver: bridge
+  
+  monitoring:
     driver: bridge
