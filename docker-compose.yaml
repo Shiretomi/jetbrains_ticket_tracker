@@ -81,7 +81,7 @@ services:
     environment:
       - REDIS_ADDR=redis://redis:6379/1
     command:
-      - '--check-keys=1=tickets:known,1=tickets:new'
+      - '--check-keys=1=tickets:known,0=tickets:new'
     ports:
       - "9121:9121"
     networks:
