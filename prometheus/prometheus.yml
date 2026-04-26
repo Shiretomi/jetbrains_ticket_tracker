@@ -8,3 +8,5 @@ scrape_configs:
         - 'sla_tracker_app:8000'
         - 'ticket_tracker_app:8000'
         - 'commands_handler_app:8000'
+        - 'redis_exporter:9121'
+        - 'node_exporter:9100'

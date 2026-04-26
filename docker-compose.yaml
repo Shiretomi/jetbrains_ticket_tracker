@@ -73,10 +73,57 @@ services:
       - "9090:9090"
     networks:
       - monitoring
+  
+  redis_exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    restart: on-failure
+    environment:
+      - REDIS_ADDR=redis://redis:6379/1
+    command:
+      - '--check-keys=1=tickets:known,1=tickets:new'
+    ports:
+      - "9121:9121"
+    networks:
+      - monitoring
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+  
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=asdqwe123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
 
 volumes:
   redis_data:
   prometheus_data:
+  grafana_data:
   
 networks:
   bot_network:
