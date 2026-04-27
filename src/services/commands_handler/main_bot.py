@@ -8,7 +8,7 @@ from commands.scripts import init_scripts
 from aiogram import Bot, Dispatcher
 from common.utils.config import config
 from common.monitoring.metrics import start_metrics_server
-from common.monitoring.middleware import MetricsMiddleware
+from common.monitoring.middleware import MetricsMiddleware, CallbacksMiddleware
 
 import asyncio
 
@@ -19,6 +19,7 @@ BOT = Bot(token=TOKEN)
 dp = Dispatcher()
 
 dp.message.middleware(MetricsMiddleware())
+dp.callback_query.middleware(CallbacksMiddleware())
 
 #Инициализацию команд вписывать сюда
 init_dev(dp)
