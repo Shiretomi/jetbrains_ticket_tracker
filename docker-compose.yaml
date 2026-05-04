@@ -112,7 +112,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=asdqwe123
+      - GF_SECURITY_ADMIN_PASSWORD=asdqwe123 # На проде заменить пароль 
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
